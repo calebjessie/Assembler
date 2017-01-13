@@ -1,32 +1,23 @@
 // Create window controls
 const remote = require('electron').remote;
 	
-function init() {
+(function() {
 	document.getElementById("min-btn").addEventListener("click", function(e) {
-		/*const window = remote.getCurrentWindow();
-		window.minimize();*/
-		console.log('Min');
+		const window = remote.getCurrentWindow();
+		window.minimize();
 	});
 
 	document.getElementById("max-btn").addEventListener("click", function(e) {
-		/*const window = remote.getCurrentWindow();
+		const window = remote.getCurrentWindow();
 		if (!window.isMaximized()) {
 			window.maximize();
 		} else {
 			window.unmaximize();
-		}*/
-		console.log('Max');
+		}
 	});
 
 	document.getElementById("close-btn").addEventListener("click", function(e) {
-		/*const window = remote.getCurrentWindow();
-		window.close();*/
-		console.log('Close');
+		const window = remote.getCurrentWindow();
+		window.close();
 	});
-
-	document.onreadystatechange = function() {
-		if (document.readyState == "complete") {
-			init();
-		}
-	};
-};
+})();
