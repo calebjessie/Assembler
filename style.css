@@ -1,0 +1,24 @@
+body {
+	margin: 0;
+	background: #222425;
+	color: #fff;
+}
+h1, h2, h3, h4, h5, h6 {
+	margin: 0;
+}
+h1 {
+	padding-bottom: 10px;
+}
+header {
+	-webkit-app-region: drag;
+	padding: 15px 25px;
+	background: #313436;
+}
+.branding, .search, .window-controls {
+	-webkit-app-region: no-drag;
+	display: inline-block;
+}
+.asset-feed {
+	clear: both;
+	padding: 25px;
+}
