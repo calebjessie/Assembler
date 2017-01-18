@@ -2,12 +2,12 @@
 const remote = require('electron').remote;
 	
 (function() {
-	document.getElementById("min-btn").addEventListener("click", function(e) {
+	document.getElementById('min-btn').addEventListener('click', function(e) {
 		const window = remote.getCurrentWindow();
 		window.minimize();
 	});
 
-	document.getElementById("max-btn").addEventListener("click", function(e) {
+	document.getElementById('max-btn').addEventListener('click', function(e) {
 		const window = remote.getCurrentWindow();
 		if (!window.isMaximized()) {
 			window.maximize();
@@ -16,7 +16,7 @@ const remote = require('electron').remote;
 		}
 	});
 
-	document.getElementById("close-btn").addEventListener("click", function(e) {
+	document.getElementById('close-btn').addEventListener('click', function(e) {
 		const window = remote.getCurrentWindow();
 		window.close();
 	});
