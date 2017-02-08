@@ -1,5 +1,6 @@
 const remote = require('electron').remote;
-const fs = require('fs');
+const fs = require('fs'),
+	  path = require('path');
 
 // Create window controls
 (function() {
@@ -25,20 +26,34 @@ const fs = require('fs');
 // Create directory browse
 const browseDir = function() {
 	document.getElementById('browse-files').addEventListener('click', () => {
-		let filePaths = remote.dialog.showOpenDialog({
+		var filePaths = remote.dialog.showOpenDialog({
 			properties: ['openDirectory']
 		});
-		for (let filePath of filePaths) {
+		for (var filePath of filePaths) {
 			console.log(filePath);
 		}
+		
+		walk(filePath, function(curPath, stat) {
+			console.log(curPath);
+		});
 	});
 }
 
 browseDir();
 
-
-
-
+function walk(currentDirPath, callback) {
+	fs.readdir(currentDirPath, (err, files) => {
+		files.forEach(file => {
+			var curPath = path.join(currentDirPath, file);
+			var stat = fs.statSync(curPath);
+			if (stat.isFile()) {
+				callback(curPath, stat);
+			} else if (stat.isDirectory()) {
+				walk(curPath, callback);
+			}
+		})
+	});
+}
 
 
 
@@ -47,4 +62,17 @@ browseDir();
 	// Display feed
 //} else {
 	// User browses for directory
+	// Create directory browse
+/*	const browseDir = function() {
+		document.getElementById('browse-files').addEventListener('click', () => {
+			let filePaths = remote.dialog.showOpenDialog({
+				properties: ['openDirectory']
+			});
+			for (let filePath of filePaths) {
+				console.log(filePath);
+			}
+		});
+	}
+
+	browseDir();*/
 //}
