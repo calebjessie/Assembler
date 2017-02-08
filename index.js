@@ -3,41 +3,40 @@ const fs = require('fs');
 
 // Create window controls
 (function() {
-	document.getElementById('min-btn').addEventListener('click', function(e) {
-		const window = remote.getCurrentWindow();
-		window.minimize();
-	});
+	document.getElementById('min-btn').addEventListener('click', () => {
+		remote.getCurrentWindow().minimize();
+	}, false);
 
-	document.getElementById('max-btn').addEventListener('click', function(e) {
-		const window = remote.getCurrentWindow();
-		if (!window.isMaximized()) {
-			window.maximize();
+	document.getElementById('max-btn').addEventListener('click', () => {
+		if (!remote.getCurrentWindow().isMaximized()) {
+			remote.getCurrentWindow().maximize();
 		} else {
-			window.unmaximize();
+			remote.getCurrentWindow().unmaximize();
 		}
-	});
+	}, false);
 
-	document.getElementById('close-btn').addEventListener('click', function(e) {
-		const window = remote.getCurrentWindow();
-		window.close();
-	});
+	document.getElementById('close-btn').addEventListener('click', () => {
+		remote.getCurrentWindow().close();
+	}, false);
 })();
+
+
 
 // Create directory browse
 const browseDir = function() {
-	document.getElementById('browse-files').addEventListener('click', function(e) {
-		const window = remote.getCurrentWindow();
-		dialog.showOpenDialog({
+	document.getElementById('browse-files').addEventListener('click', () => {
+		let filePaths = remote.dialog.showOpenDialog({
 			properties: ['openDirectory']
-			/*
-			filters: [
-				{name: 'Images', extensions: ['jpg', 'png']}
-			]*/
 		});
+		for (let filePath of filePaths) {
+			console.log(filePath);
+		}
 	});
 }
 
 browseDir();
+
+
 
 
 
