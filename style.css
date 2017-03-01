@@ -13,12 +13,41 @@ header {
 	-webkit-app-region: drag;
 	padding: 15px 25px;
 	background: #313436;
+	height: 80px;
+	width: 100%;
+	position: fixed;
+	top: 0px;
 }
 .branding, .search, .window-controls {
 	-webkit-app-region: no-drag;
 	display: inline-block;
 }
-.asset-feed {
+#container {
+	position: fixed;
+	overflow-y: auto;
+	top: 110px;
+	bottom: 0;
+	right: 0;
+    left: 0;
+}
+#asset-feed {
 	clear: both;
 	padding: 25px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	height: 608px;
+}
+.asset-img {
+    width: 300px;
+    height: 200px;
+    overflow: hidden;
+    margin: 25px;
+	text-align: center;
+	background-size: cover;
+}
+.asset-img img {
+    width: auto;
+    height: 100%;
 }
