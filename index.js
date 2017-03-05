@@ -1,6 +1,7 @@
 'use strict'
 const {ipcRenderer} = require('electron');
-const remote = require('electron').remote;
+const remote = require('electron').remote,
+	  jimp = require('jimp');
 
 
 // Create window controls
@@ -34,18 +35,20 @@ const browseDir = function() {
 	});
 	
 	ipcRenderer.on('getAssets', (event, arg) => {
+		let loopStart = 20;
+		
 		for (let i = 0; i < 20; i++) {
-			displayAssets(arg[i].file);
+			displayAssets(arg[i].path);
 		}
-		console.log(document.getElementById('asset-feed').clientHeight);
 		
 		document.getElementById('browse').style.display = 'none';
 		document.getElementById('container').addEventListener('scroll', () => {
 			let container = document.getElementById('container');
 			
 			if ((container.clientHeight + container.scrollTop) >= container.scrollHeight) {
-				renderFileImages(20, 20, arg);
-				console.log('Works');
+				renderFileImages(loopStart, 20, arg);
+				
+				loopStart += 20;
 			}
 		});
 	});
@@ -54,41 +57,44 @@ const browseDir = function() {
 
 // Create html for each asset
 function displayAssets(path) {
-	let divImg = document.createElement('div');
+/*	let divImg = document.createElement('div');
 	let bgImg = 'url("' + path.replace(/\\/g,"/") + '")';
 	
 	divImg.className = 'asset-img';
 	divImg.style.backgroundImage = bgImg;
 	
-	document.getElementById('asset-feed').appendChild(divImg);
+	divImg.addEventListener("mouseover", () => {
+		divImg.classList.add('img-hover');
+	}, false);
+	divImg.addEventListener("mouseout", () => {
+		divImg.classList.remove('img-hover');
+	}, false);*/
+	
+	
+	// Jimp to resize and minify images
+	jimp.read(path.replace(/\\/g,"/")).then((image) => {
+		image.resize(300, jimp.AUTO)
+			.quality(80)
+			.getBase64(jimp.MIME_JPEG, (err, src) => {
+				let divImg = document.createElement('div');
+				divImg.className = 'asset-img';
+				divImg.style.backgroundImage = 'url(' + src + ')';
+				document.getElementById('asset-feed').appendChild(divImg);
+			});
+	}).catch(function(err) {
+		//console.error(err);	
+	});
+	
+	
+	//document.getElementById('asset-feed').appendChild(divImg);
 }
 
 
 // Display more assets on scroll
 function renderFileImages(startPosition, length, array) {
 	for(let i = startPosition; i < startPosition + length; i++) {
-		displayAssets(array[i].file);
+		displayAssets(array[i].path);
 	}
 }
-
-
-// Save array to JSON
-/*function saveJSON(array) {
-	let addFiles = JSON.stringify(array, null, "\t");
-	
-	fs.writeFile('files.json', addFiles, (err) => {
-		if (err) throw err;
-		console.log("Saved file.");
-	});
-}*/
-
-
-// Check if user has selected a directory
-/*if (allFiles.length != 0) {
-	console.log("Files have been loaded");
-} else {
-	browseDir();
-}*/
-
 
 browseDir();

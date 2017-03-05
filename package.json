@@ -4,5 +4,8 @@
   "main": "main.js",
   "devDependencies": {
     "electron": "^1.4.13"
+  },
+  "dependencies": {
+    "jimp": "^0.2.27"
   }
 }
