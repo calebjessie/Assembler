@@ -1,7 +1,9 @@
 'use strict'
 const {ipcRenderer} = require('electron');
 const remote = require('electron').remote,
-	  jimp = require('jimp');
+	  jimp = require('jimp'),
+	  stream = require('stream');
+let docFrag = document.createDocumentFragment();
 
 
 // Create window controls
@@ -37,11 +39,17 @@ const browseDir = function() {
 	ipcRenderer.on('getAssets', (event, arg) => {
 		let loopStart = 20;
 		
+		
 		for (let i = 0; i < 20; i++) {
 			displayAssets(arg[i].path);
+			
+			if (i === 19) {
+				document.getElementById('asset-feed').appendChild(docFrag);
+			}
 		}
 		
 		document.getElementById('browse').style.display = 'none';
+		
 		document.getElementById('container').addEventListener('scroll', () => {
 			let container = document.getElementById('container');
 			
@@ -57,35 +65,35 @@ const browseDir = function() {
 
 // Create html for each asset
 function displayAssets(path) {
-/*	let divImg = document.createElement('div');
+	let divImg = document.createElement('div');
 	let bgImg = 'url("' + path.replace(/\\/g,"/") + '")';
 	
 	divImg.className = 'asset-img';
 	divImg.style.backgroundImage = bgImg;
 	
-	divImg.addEventListener("mouseover", () => {
+/*	divImg.addEventListener("mouseover", () => {
 		divImg.classList.add('img-hover');
 	}, false);
 	divImg.addEventListener("mouseout", () => {
 		divImg.classList.remove('img-hover');
 	}, false);*/
 	
-	
 	// Jimp to resize and minify images
-	jimp.read(path.replace(/\\/g,"/")).then((image) => {
-		image.resize(300, jimp.AUTO)
-			.quality(80)
+/*	jimp.read(path.replace(/\\/g,"/")).then((image) => {
+		image.resize(500, jimp.AUTO)
 			.getBase64(jimp.MIME_JPEG, (err, src) => {
 				let divImg = document.createElement('div');
 				divImg.className = 'asset-img';
 				divImg.style.backgroundImage = 'url(' + src + ')';
 				document.getElementById('asset-feed').appendChild(divImg);
+				//htmlBuffer.concat(divImg);
+				console.log('loaded asset');
 			});
 	}).catch(function(err) {
 		//console.error(err);	
-	});
+	});*/
 	
-	
+	docFrag.appendChild(divImg);
 	//document.getElementById('asset-feed').appendChild(divImg);
 }
 
@@ -94,6 +102,10 @@ function displayAssets(path) {
 function renderFileImages(startPosition, length, array) {
 	for(let i = startPosition; i < startPosition + length; i++) {
 		displayAssets(array[i].path);
+		
+		if (i === (startPosition + length) - 1) {
+			document.getElementById('asset-feed').appendChild(docFrag);
+		}
 	}
 }
 

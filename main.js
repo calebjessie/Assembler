@@ -77,7 +77,6 @@ app.on('activate', () => {
 
 // Load Assets
 ipcMain.on('loadAssets', (event, args) => {
-	let allFiles = [];
 	
 	var filePaths = dialog.showOpenDialog({
 		properties: ['openDirectory']
@@ -86,34 +85,57 @@ ipcMain.on('loadAssets', (event, args) => {
 	for (var filePath of filePaths) {
 		console.log(filePath);
 	}
-
-	walkSync(filePath, (curPath, stat, fileType) => {
-		allFiles.push({ 
-			path: curPath,
-			type: fileType
-		});
+	
+	walk(filePath, (err, allFiles) => {
+		if (err) throw err;
+		//console.log(allFiles);
+		let filtered = allFiles.filter(filterFiles)
+		function filterFiles(files) {
+			return files.fileType === '.jpg';
+		}
+		event.sender.send('getAssets', filtered);
 	});
 
 	//saveJSON(allFiles);
-	
-	event.sender.send('getAssets', allFiles);
 })
 
+// Async walk version
+function walk(dir, done) {
+	let allFiles = [];
+	
+	fs.readdir(dir, (err, files) => {
+		if (err) return done(err);
+		let pendingFiles = files.length;
+		if (!pendingFiles) return done(null, results);
 
-// Walk through all directories to find paths
-function walkSync(currentDirPath, callback) {
-	fs.readdirSync(currentDirPath).forEach(file => {
-		let curPath = path.join(currentDirPath, file);
-		let stat = fs.statSync(curPath);
-		let fileType = path.extname(curPath);
-		if (stat.isFile()) {
-			if (fileType == '.jpg') {
-				callback(curPath, stat, fileType);
-			}
-			//callback(curPath, stat, fileType);
-		} else if (stat.isDirectory()) {
-			walkSync(curPath, callback);
-		}
+		files.forEach(filePath => {
+			filePath = path.resolve(dir, filePath);
+			
+			fs.stat(filePath, (err, stats) => {
+				if (stats && stats.isDirectory()) {
+					walk(filePath, (err, res) => {
+						allFiles = allFiles.concat(res);
+
+						if (pendingFiles === 1) {
+							return done(err, allFiles);
+						} else {
+							pendingFiles -= 1;
+						}
+					});
+				} else {
+					allFiles.push({
+						path: filePath,
+						fileType: path.extname(filePath)
+					});
+
+					if (pendingFiles === 1) {
+						return done(err, allFiles);
+					} else {
+						pendingFiles -= 1;
+					}
+				}
+			});
+		});
 	});
 }
 
