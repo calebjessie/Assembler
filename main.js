@@ -1,17 +1,23 @@
-const {app, BrowserWindow, ipcMain, dialog} = require('electron');
+'use strict'
+const {app,
+	   BrowserWindow,
+	   ipcMain,
+	   dialog,
+	   session} = require('electron');
+
 const path = require('path'),
 	  url = require('url'),
 	  fs = require('fs'),
 	  states = require('states');
 
-let win;
+let win, ses;
 
 function createWindow () {
 	let lastWindowState = states.get("lastWindowState");
 	
 	if (lastWindowState === null) {
 		lastWindowState = {
-			width: 1124,
+			width: 1366,
 			height: 768,
 			maximized: false,
 			frame: false
@@ -37,6 +43,8 @@ function createWindow () {
 	}));
 	
 	win.webContents.openDevTools()
+	
+	ses = win.webContents.session;
 	
 	win.on('close', () => {
 		let bounds = win.getBounds();
@@ -74,7 +82,6 @@ app.on('activate', () => {
 	}
 })
 
-
 // Load Assets
 ipcMain.on('loadAssets', (event, args) => {
 	
@@ -82,17 +89,21 @@ ipcMain.on('loadAssets', (event, args) => {
 		properties: ['openDirectory']
 	});
 	
-	for (var filePath of filePaths) {
-		console.log(filePath);
-	}
+	for (var filePath of filePaths) {;}
 	
 	walk(filePath, (err, allFiles) => {
 		if (err) throw err;
-		//console.log(allFiles);
+		
 		let filtered = allFiles.filter(filterFiles)
 		function filterFiles(files) {
 			return files.fileType === '.jpg';
 		}
+		
+		fs.mkdir(path.join(app.getPath('userData'), '.thumbnails'), (err, callback) => {
+			if (err) return err;
+			console.log("Created dir");
+		});
+		
 		event.sender.send('getAssets', filtered);
 	});
 
@@ -130,6 +141,7 @@ function walk(dir, done) {
 
 					if (pendingFiles === 1) {
 						return done(err, allFiles);
+						allFiles = null;
 					} else {
 						pendingFiles -= 1;
 					}

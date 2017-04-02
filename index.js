@@ -1,12 +1,18 @@
 'use strict'
+
+require("babel-core").transform("code");
+
 const {ipcRenderer} = require('electron');
+const {requireTaskPool} = require('electron-remote');
+
 const remote = require('electron').remote,
-	  jimp = require('jimp'),
-	  stream = require('stream');
+	  fs = require('fs'),
+	  pImg = requireTaskPool(require.resolve('./imgProcess'));
+
 let docFrag = document.createDocumentFragment();
 
 
-// Create window controls
+// Create window controls and browse functionality
 (function() {
 	document.getElementById('min-btn').addEventListener('click', () => {
 		remote.getCurrentWindow().minimize();
@@ -23,90 +29,53 @@ let docFrag = document.createDocumentFragment();
 	document.getElementById('close-btn').addEventListener('click', () => {
 		remote.getCurrentWindow().close();
 	}, false);
-})();
-
-
-// Create directory browse
-const browseDir = function() {
-	
-	document.getElementById('asset-feed').innerHTML = '<div id="browse">Start by browsing for your assets folder. <button id="browse-files">Browse</button></div>';
 	
 	document.getElementById('browse-files').addEventListener('click', () => {
-		// ipc message
 		ipcRenderer.send('loadAssets');
 	});
+})();
+
+// Displays assets once browse btn is clicked
+ipcRenderer.on('getAssets', (event, filtered) => {	
+	let loopStart = 0;
 	
-	ipcRenderer.on('getAssets', (event, arg) => {
-		let loopStart = 20;
-		
-		
-		for (let i = 0; i < 20; i++) {
-			displayAssets(arg[i].path);
-			
-			if (i === 19) {
-				document.getElementById('asset-feed').appendChild(docFrag);
-			}
+	document.getElementById('browse').style.display = 'none';
+	if (loopStart == 0) initAssets(filtered, loopStart, 20);
+	loopStart += 20;
+	
+	document.getElementById('container').addEventListener('scroll', () => {
+		let container = document.getElementById('container');
+
+		if ((container.clientHeight + container.scrollTop) >= container.scrollHeight) {
+			// PROBLEM
+			// Need to figure out a way to load in the last odd number of files
+			// 920 + 20 = 940, but files end at 923.
+			initAssets(filtered, loopStart, 20);
+
+			loopStart += 20;
 		}
-		
-		document.getElementById('browse').style.display = 'none';
-		
-		document.getElementById('container').addEventListener('scroll', () => {
-			let container = document.getElementById('container');
-			
-			if ((container.clientHeight + container.scrollTop) >= container.scrollHeight) {
-				renderFileImages(loopStart, 20, arg);
-				
-				loopStart += 20;
-			}
-		});
 	});
-}
+});
 
+// Process and append each asset
+function initAssets(array, start, length) {
+	
+	for (let i = start; i < start + length; i++) {
+		(async function process() {
+			let src = array[i].path.replace(/\\/g,"/");
+			let image = await pImg.processImages(src);
+			
+			//console.log(image);
+			
+			let divImg = document.createElement('div');
+			divImg.className = 'asset-img';
+			divImg.style.backgroundImage = 'url("' + image.replace(/\\/g,"/") + '")';
 
-// Create html for each asset
-function displayAssets(path) {
-	let divImg = document.createElement('div');
-	let bgImg = 'url("' + path.replace(/\\/g,"/") + '")';
-	
-	divImg.className = 'asset-img';
-	divImg.style.backgroundImage = bgImg;
-	
-/*	divImg.addEventListener("mouseover", () => {
-		divImg.classList.add('img-hover');
-	}, false);
-	divImg.addEventListener("mouseout", () => {
-		divImg.classList.remove('img-hover');
-	}, false);*/
-	
-	// Jimp to resize and minify images
-/*	jimp.read(path.replace(/\\/g,"/")).then((image) => {
-		image.resize(500, jimp.AUTO)
-			.getBase64(jimp.MIME_JPEG, (err, src) => {
-				let divImg = document.createElement('div');
-				divImg.className = 'asset-img';
-				divImg.style.backgroundImage = 'url(' + src + ')';
-				document.getElementById('asset-feed').appendChild(divImg);
-				//htmlBuffer.concat(divImg);
-				console.log('loaded asset');
-			});
-	}).catch(function(err) {
-		//console.error(err);	
-	});*/
-	
-	docFrag.appendChild(divImg);
-	//document.getElementById('asset-feed').appendChild(divImg);
-}
-
-
-// Display more assets on scroll
-function renderFileImages(startPosition, length, array) {
-	for(let i = startPosition; i < startPosition + length; i++) {
-		displayAssets(array[i].path);
-		
-		if (i === (startPosition + length) - 1) {
+			docFrag.appendChild(divImg);
 			document.getElementById('asset-feed').appendChild(docFrag);
-		}
+			divImg = null;
+		})();
 	}
+	
+	
 }
-
-browseDir();

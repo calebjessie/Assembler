@@ -33,11 +33,14 @@ header {
 #asset-feed {
 	clear: both;
 	padding: 25px;
+	height: 608px;
+	text-align: center;
+}
+.tile {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: center;
-	height: 608px;
 }
 .asset-img {
     width: 300px;

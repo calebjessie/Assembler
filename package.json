@@ -1,11 +1,21 @@
 {
   "name": "Asset-Manager",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "main": "main.js",
+  "description": "An design asset manager",
+  "scripts": {
+    "start": "electron ."
+  },
   "devDependencies": {
-    "electron": "^1.4.13"
+    "babel-core": "^6.24.0",
+    "babel-preset-env": "^1.2.2",
+    "babel-preset-es2015": "^6.24.0",
+    "devtron": "^1.4.0",
+    "electron": "^1.4.13",
+    "electron-rebuild": "^1.5.7"
   },
   "dependencies": {
-    "jimp": "^0.2.27"
+    "electron-remote": "^1.1.2",
+    "sharp": "^0.17.2"
   }
 }
