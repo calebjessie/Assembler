@@ -4,16 +4,16 @@ const sharp = require('sharp'),
 	  path = require('path');
 
 // Resize images on child process
-exports.processImages = (imgPath) => {
+exports.processImages = async (imgPath, count) => {
 	let sharpImg = sharp(imgPath),
 		thumb = path.join(app.getPath('userData'), '.thumbnails'),
-		fileName = imgPath.split(/(\\|\/)/g).pop().replace(/\.[^/.]+$/, "") + '.webp',
+		fileName = count + '.webp',
 		fullPath = path.join(thumb, fileName);
 	
-	sharpImg
-		.resize(200, null)
+	await sharpImg
+		.resize(400, null)
 		.webp()
-		.toFile(path.join(thumb, fileName));
+		.toFile(fullPath);
 	
 	return fullPath;
 }

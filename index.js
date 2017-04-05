@@ -43,7 +43,7 @@ ipcRenderer.on('getAssets', (event, filtered) => {
 	if (loopStart == 0) initAssets(filtered, loopStart, 20);
 	loopStart += 20;
 	
-	document.getElementById('container').addEventListener('scroll', () => {
+	/*document.getElementById('container').addEventListener('scroll', () => {
 		let container = document.getElementById('container');
 
 		if ((container.clientHeight + container.scrollTop) >= container.scrollHeight) {
@@ -51,21 +51,19 @@ ipcRenderer.on('getAssets', (event, filtered) => {
 			// Need to figure out a way to load in the last odd number of files
 			// 920 + 20 = 940, but files end at 923.
 			initAssets(filtered, loopStart, 20);
-
 			loopStart += 20;
 		}
-	});
+	});*/
 });
 
 // Process and append each asset
 function initAssets(array, start, length) {
-	
-	for (let i = start; i < start + length; i++) {
+	array.forEach((item, count) => {
 		(async function process() {
-			let src = array[i].path.replace(/\\/g,"/");
-			let image = await pImg.processImages(src);
+			let src = item.path.replace(/\\/g,"/");
+			let image = await pImg.processImages(src, count);
 			
-			//console.log(image);
+			console.log(src, image);
 			
 			let divImg = document.createElement('div');
 			divImg.className = 'asset-img';
@@ -73,9 +71,6 @@ function initAssets(array, start, length) {
 
 			docFrag.appendChild(divImg);
 			document.getElementById('asset-feed').appendChild(docFrag);
-			divImg = null;
 		})();
-	}
-	
-	
+	});
 }

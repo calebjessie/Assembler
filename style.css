@@ -35,8 +35,6 @@ header {
 	padding: 25px;
 	height: 608px;
 	text-align: center;
-}
-.tile {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
