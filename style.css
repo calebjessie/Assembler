@@ -40,6 +40,9 @@ header {
 	flex-wrap: wrap;
 	justify-content: center;
 }
+#browse {
+	display: none;
+}
 .asset-img {
     width: 300px;
     height: 200px;

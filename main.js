@@ -71,9 +71,10 @@ ipcMain.on('window', (event, args) => {
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
-	if (process.platform !== 'darwin') {
+/*	if (process.platform !== 'darwin') {
 		app.quit();
-	}
+	}*/
+	app.quit();
 })
 
 app.on('activate', () => {
@@ -94,20 +95,22 @@ ipcMain.on('loadAssets', (event, args) => {
 	walk(filePath, (err, allFiles) => {
 		if (err) throw err;
 		
-		let filtered = allFiles.filter(filterFiles)
-		function filterFiles(files) {
-			return files.fileType === '.jpg';
-		}
+		let filtered = allFiles.filter((files) => {
+			function testPath(s) {
+				let test = new RegExp('\\b__').test(s);
+				return !test;
+			}
+			
+			return (files.fileType === '.jpg' && testPath(files.path));
+		});
+		
 		
 		fs.mkdir(path.join(app.getPath('userData'), '.thumbnails'), (err, callback) => {
 			if (err) return err;
-			console.log("Created dir");
 		});
 		
 		event.sender.send('getAssets', filtered);
 	});
-
-	//saveJSON(allFiles);
 })
 
 // Async walk version
@@ -148,16 +151,5 @@ function walk(dir, done) {
 				}
 			});
 		});
-	});
-}
-
-
-// Save array to JSON
-function saveJSON(array) {
-	let addFiles = JSON.stringify(array, null, "\t");
-	
-	fs.writeFile('files.json', addFiles, (err) => {
-		if (err) throw err;
-		console.log("Saved file.");
 	});
 }

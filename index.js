@@ -4,12 +4,15 @@ require("babel-core").transform("code");
 
 const {ipcRenderer} = require('electron');
 const {requireTaskPool} = require('electron-remote');
+const {app} = require('electron').remote;
 
 const remote = require('electron').remote,
 	  fs = require('fs'),
+	  path = require('path'),
 	  pImg = requireTaskPool(require.resolve('./imgProcess'));
 
-let docFrag = document.createDocumentFragment();
+let docFrag = document.createDocumentFragment(),
+	pFiles = [];
 
 
 // Create window controls and browse functionality
@@ -30,6 +33,17 @@ let docFrag = document.createDocumentFragment();
 		remote.getCurrentWindow().close();
 	}, false);
 	
+	
+	fs.stat(path.join(app.getPath('userData'), 'files.json'), (err, stat) => {
+		if (err == null) {
+			jsonDisplay();
+		} else if(err.code == 'ENOENT') {
+			document.getElementById('browse').style.display = 'block';
+		} else {
+			console.log('Some other error:', err.code);
+		}
+	});
+	
 	document.getElementById('browse-files').addEventListener('click', () => {
 		ipcRenderer.send('loadAssets');
 	});
@@ -37,40 +51,56 @@ let docFrag = document.createDocumentFragment();
 
 // Displays assets once browse btn is clicked
 ipcRenderer.on('getAssets', (event, filtered) => {	
-	let loopStart = 0;
-	
 	document.getElementById('browse').style.display = 'none';
-	if (loopStart == 0) initAssets(filtered, loopStart, 20);
-	loopStart += 20;
-	
-	/*document.getElementById('container').addEventListener('scroll', () => {
-		let container = document.getElementById('container');
-
-		if ((container.clientHeight + container.scrollTop) >= container.scrollHeight) {
-			// PROBLEM
-			// Need to figure out a way to load in the last odd number of files
-			// 920 + 20 = 940, but files end at 923.
-			initAssets(filtered, loopStart, 20);
-			loopStart += 20;
-		}
-	});*/
+	initAssets(filtered, 0);
 });
 
 // Process and append each asset
-function initAssets(array, start, length) {
-	array.forEach((item, count) => {
+function initAssets(array, start, cb) {
+	
+	for (let i = 0; i < array.length; i++) {
 		(async function process() {
-			let src = item.path.replace(/\\/g,"/");
-			let image = await pImg.processImages(src, count);
-			
-			console.log(src, image);
-			
+			let src = array[i].path.replace(/\\/g,"/");
+			let image = await pImg.processImages(src, i);
+			let formattedPath = image.replace(/\\/g,"/");
+
+			pFiles.push({file: formattedPath});
+
 			let divImg = document.createElement('div');
 			divImg.className = 'asset-img';
-			divImg.style.backgroundImage = 'url("' + image.replace(/\\/g,"/") + '")';
+			divImg.style.backgroundImage = 'url("' + formattedPath + '")';
 
 			docFrag.appendChild(divImg);
 			document.getElementById('asset-feed').appendChild(docFrag);
+			
+			console.log(i, array.length);
+			
+			if (i + 1 === array.length) {
+				fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
+					if (err) console.log(err);
+				});
+				console.log('Should save');
+			}
 		})();
+	}
+}
+
+function jsonDisplay() {
+	let jsonFiles = {};
+	
+	fs.readFile(path.join(app.getPath('userData'), 'files.json'), (err, data) => {
+		if (err) throw err;
+		
+		jsonFiles = JSON.parse(data);
+		
+		for (let i = 0; i < jsonFiles.length; i++) {
+			let src = jsonFiles[i].file;
+			let divImg = document.createElement('div');
+			divImg.className = 'asset-img';
+			divImg.style.backgroundImage = 'url("' + src + '")';
+
+			docFrag.appendChild(divImg);
+			document.getElementById('asset-feed').appendChild(docFrag);
+		}
 	});
 }
