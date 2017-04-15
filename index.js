@@ -57,8 +57,9 @@ ipcRenderer.on('getAssets', (event, filtered) => {
 
 // Process and append each asset
 function initAssets(array, start, cb) {
+	let uArray = array;
 	
-	for (let i = 0; i < array.length; i++) {
+	for (let i = uArray.length; i >= 0; i--) {
 		(async function process() {
 			let src = array[i].path.replace(/\\/g,"/");
 			let image = await pImg.processImages(src, i);
@@ -73,17 +74,32 @@ function initAssets(array, start, cb) {
 			docFrag.appendChild(divImg);
 			document.getElementById('asset-feed').appendChild(docFrag);
 			
-			console.log(i, array.length);
-			
+			// If at end of array, save json
 			if (i + 1 === array.length) {
 				fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
 					if (err) console.log(err);
 				});
-				console.log('Should save');
 			}
+			
+/*			app.onbeforeunload => {
+				fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
+					if (err) console.log(err);
+				});
+			}*/
 		})();
+		
+		uArray.splice(i, 1);
 	}
+	
+	// Send over array here before closing.
 }
+
+// If user exiting, save current json
+/*remote.app.on('will-quit', () => {
+	fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
+		if (err) console.log(err);
+	});
+});*/
 
 function jsonDisplay() {
 	let jsonFiles = {};

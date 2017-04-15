@@ -1,9 +1,5 @@
 'use strict'
-const {app,
-	   BrowserWindow,
-	   ipcMain,
-	   dialog,
-	   session} = require('electron');
+const {app, BrowserWindow, ipcMain, dialog, session, Menu, Tray} = require('electron');
 
 const path = require('path'),
 	  url = require('url'),
@@ -11,6 +7,8 @@ const path = require('path'),
 	  states = require('states');
 
 let win, ses;
+
+let tray = null;
 
 function createWindow () {
 	let lastWindowState = states.get("lastWindowState");
@@ -63,25 +61,29 @@ function createWindow () {
 	});
 }
 
-// Send window information
-ipcMain.on('window', (event, args) => {
-	event.sender.send('getWin', win);
-})
-
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
-/*	if (process.platform !== 'darwin') {
+	if (process.platform !== 'darwin') {
 		app.quit();
-	}*/
-	app.quit();
-})
+	}
+});
 
 app.on('activate', () => {
 	if (win === null) {
 		createWindow();
 	}
-})
+});
+
+/*app.on('before-quit' () => {
+	win.webContents.send('quitting', ());
+})*/
+
+ipcMain.on('exitSave', (event, args) => {
+	fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
+		if (err) console.log(err);
+	});
+});
 
 // Load Assets
 ipcMain.on('loadAssets', (event, args) => {
@@ -104,14 +106,13 @@ ipcMain.on('loadAssets', (event, args) => {
 			return (files.fileType === '.jpg' && testPath(files.path));
 		});
 		
-		
 		fs.mkdir(path.join(app.getPath('userData'), '.thumbnails'), (err, callback) => {
 			if (err) return err;
 		});
 		
 		event.sender.send('getAssets', filtered);
 	});
-})
+});
 
 // Async walk version
 function walk(dir, done) {
