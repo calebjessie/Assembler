@@ -12,7 +12,8 @@ const remote = require('electron').remote,
 	  pImg = requireTaskPool(require.resolve('./imgProcess'));
 
 let docFrag = document.createDocumentFragment(),
-	pFiles = [];
+	pFiles = [],
+	uArray = [];
 
 
 // Create window controls and browse functionality
@@ -30,7 +31,14 @@ let docFrag = document.createDocumentFragment(),
 	}, false);
 
 	document.getElementById('close-btn').addEventListener('click', () => {
-		remote.getCurrentWindow().close();
+		fs.writeFile(path.join(app.getPath('userData'), 'unprocessed.json'), JSON.stringify(uArray), (err) => {
+			if (err) console.log(err);
+		});
+		
+		fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
+			if (err) console.log(err);
+			remote.getCurrentWindow().close();
+		});
 	}, false);
 	
 	
@@ -57,9 +65,11 @@ ipcRenderer.on('getAssets', (event, filtered) => {
 
 // Process and append each asset
 function initAssets(array, start, cb) {
-	let uArray = array;
+	uArray.push(array);
 	
-	for (let i = uArray.length; i >= 0; i--) {
+	console.log(uArray);
+	
+	for (let i = array.length; i >= 0; i--) {
 		(async function process() {
 			let src = array[i].path.replace(/\\/g,"/");
 			let image = await pImg.processImages(src, i);
@@ -75,31 +85,16 @@ function initAssets(array, start, cb) {
 			document.getElementById('asset-feed').appendChild(docFrag);
 			
 			// If at end of array, save json
-			if (i + 1 === array.length) {
+			if (i === 0) {
 				fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
 					if (err) console.log(err);
 				});
 			}
-			
-/*			app.onbeforeunload => {
-				fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
-					if (err) console.log(err);
-				});
-			}*/
 		})();
 		
 		uArray.splice(i, 1);
 	}
-	
-	// Send over array here before closing.
 }
-
-// If user exiting, save current json
-/*remote.app.on('will-quit', () => {
-	fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
-		if (err) console.log(err);
-	});
-});*/
 
 function jsonDisplay() {
 	let jsonFiles = {};

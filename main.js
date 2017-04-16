@@ -8,8 +8,6 @@ const path = require('path'),
 
 let win, ses;
 
-let tray = null;
-
 function createWindow () {
 	let lastWindowState = states.get("lastWindowState");
 	
@@ -73,16 +71,6 @@ app.on('activate', () => {
 	if (win === null) {
 		createWindow();
 	}
-});
-
-/*app.on('before-quit' () => {
-	win.webContents.send('quitting', ());
-})*/
-
-ipcMain.on('exitSave', (event, args) => {
-	fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
-		if (err) console.log(err);
-	});
 });
 
 // Load Assets
