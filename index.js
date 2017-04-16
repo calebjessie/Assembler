@@ -13,7 +13,7 @@ const remote = require('electron').remote,
 
 let docFrag = document.createDocumentFragment(),
 	pFiles = [],
-	uArray = [];
+	uArray = {};
 
 
 // Create window controls and browse functionality
@@ -31,11 +31,11 @@ let docFrag = document.createDocumentFragment(),
 	}, false);
 
 	document.getElementById('close-btn').addEventListener('click', () => {
-		fs.writeFile(path.join(app.getPath('userData'), 'unprocessed.json'), JSON.stringify(uArray), (err) => {
+		fs.writeFile(path.join(app.getPath('userData'), 'unprocessed.json'), JSON.stringify(uArray, null, '\t'), (err) => {
 			if (err) console.log(err);
 		});
 		
-		fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
+		fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles, null, '\t'), (err) => {
 			if (err) console.log(err);
 			remote.getCurrentWindow().close();
 		});
@@ -65,9 +65,7 @@ ipcRenderer.on('getAssets', (event, filtered) => {
 
 // Process and append each asset
 function initAssets(array, start, cb) {
-	uArray.push(array);
-	
-	console.log(uArray);
+	uArray = array.slice();
 	
 	for (let i = array.length; i >= 0; i--) {
 		(async function process() {
@@ -84,6 +82,10 @@ function initAssets(array, start, cb) {
 			docFrag.appendChild(divImg);
 			document.getElementById('asset-feed').appendChild(docFrag);
 			
+			delete uArray[i];
+			
+			console.log(uArray);
+			
 			// If at end of array, save json
 			if (i === 0) {
 				fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
@@ -91,8 +93,6 @@ function initAssets(array, start, cb) {
 				});
 			}
 		})();
-		
-		uArray.splice(i, 1);
 	}
 }
 
