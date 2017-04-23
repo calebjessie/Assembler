@@ -9,7 +9,9 @@ const {app} = require('electron').remote;
 const remote = require('electron').remote,
 	  fs = require('fs'),
 	  path = require('path'),
-	  pImg = requireTaskPool(require.resolve('./imgProcess'));
+	  pImg = requireTaskPool(require.resolve('./imgProcess')),
+	  jFiles = path.join(app.getPath('userData'), 'files.json'),
+	  unFiles = path.join(app.getPath('userData'), 'unprocessed.json');
 
 let docFrag = document.createDocumentFragment(),
 	pFiles = [],
@@ -31,26 +33,38 @@ let docFrag = document.createDocumentFragment(),
 	}, false);
 
 	document.getElementById('close-btn').addEventListener('click', () => {
-		fs.writeFile(path.join(app.getPath('userData'), 'unprocessed.json'), JSON.stringify(uArray, null, '\t'), (err) => {
-			if (err) console.log(err);
-		});
-		
-		fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles, null, '\t'), (err) => {
-			if (err) console.log(err);
+
+		// Only if images have been processed, add them to the files.json.
+		if (pFiles.length > 0) {
+			addFiles(pFiles);
+		} else {
 			remote.getCurrentWindow().close();
-		});
+		}
+		
+		// If there are unprocessed images, save list of files
+		if (Object.keys(uArray).length > 0) {
+			fs.writeFile(path.join(app.getPath('userData'), 'unprocessed.json'), JSON.stringify(uArray, null, '\t'), (err) => {
+				if (err) console.log(err);
+			});
+		}
 	}, false);
 	
+	// If files have been processed, display them
+	if (fs.existsSync(jFiles)) {
+		jsonDisplay();
+	} else {
+		document.getElementById('browse').style.display = 'block';
+	}
 	
-	fs.stat(path.join(app.getPath('userData'), 'files.json'), (err, stat) => {
-		if (err == null) {
-			jsonDisplay();
-		} else if(err.code == 'ENOENT') {
-			document.getElementById('browse').style.display = 'block';
-		} else {
-			console.log('Some other error:', err.code);
-		}
-	});
+	// If unprocessed images, continue processing them
+	if (fs.existsSync(unFiles)) {
+		fs.readFile(unFiles, (err, data) => {
+			if (err) throw err;
+			
+			const unprocessedJson = JSON.parse(data);
+			initAssets(unprocessedJson);
+		});
+	}
 	
 	document.getElementById('browse-files').addEventListener('click', () => {
 		ipcRenderer.send('loadAssets');
@@ -60,14 +74,14 @@ let docFrag = document.createDocumentFragment(),
 // Displays assets once browse btn is clicked
 ipcRenderer.on('getAssets', (event, filtered) => {	
 	document.getElementById('browse').style.display = 'none';
-	initAssets(filtered, 0);
+	initAssets(filtered);
 });
 
 // Process and append each asset
-function initAssets(array, start, cb) {
-	uArray = array.slice();
+function initAssets(array) {
+	uArray = Object.assign({}, array);
 	
-	for (let i = array.length; i >= 0; i--) {
+	for (let i = Object.keys(array).length - 1; i >= 0; i--) {
 		(async function process() {
 			let src = array[i].path.replace(/\\/g,"/");
 			let image = await pImg.processImages(src, i);
@@ -84,22 +98,41 @@ function initAssets(array, start, cb) {
 			
 			delete uArray[i];
 			
-			console.log(uArray);
-			
-			// If at end of array, save json
+			// If at end of array, save json. Prevent overwritting.
 			if (i === 0) {
-				fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(pFiles), (err) => {
-					if (err) console.log(err);
+				if (fs.existsSync(jFiles)) {
+					fs.readFile(jFiles, (err, data) => {
+						if (err) throw err;
+
+						const jsonFiles = JSON.parse(data),
+							  newFiles = Object.assign(jsonFiles, array);
+
+						fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
+							if (err) throw err;
+						});
+					});
+				} else {
+					fs.writeFile(jFiles, JSON.stringify(pFiles), (err) => {
+						if (err) console.log(err);
+					});
+				}
+			}
+			
+			// Remove unprocessed.json file - all files finished.
+			if (fs.existsSync(jFiles) && Object.keys(uArray).length === 0) {
+				fs.unlink(unFiles, (err) => {
+					if (err) throw err;
 				});
 			}
 		})();
 	}
 }
 
+// Displays processed files
 function jsonDisplay() {
 	let jsonFiles = {};
 	
-	fs.readFile(path.join(app.getPath('userData'), 'files.json'), (err, data) => {
+	fs.readFile(jFiles, (err, data) => {
 		if (err) throw err;
 		
 		jsonFiles = JSON.parse(data);
@@ -114,4 +147,28 @@ function jsonDisplay() {
 			document.getElementById('asset-feed').appendChild(docFrag);
 		}
 	});
+}
+
+// Adds newly processed files to json file
+function addFiles(array) {
+	if (fs.existsSync(jFiles)) {
+		fs.readFile(jFiles, (err, data) => {
+			if (err) throw err;
+
+			const jsonFiles = JSON.parse(data),
+				  newFiles = Object.assign(jsonFiles, array);
+
+			fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
+				if (err) throw err;
+				
+				remote.getCurrentWindow().close();
+			});
+		});
+	} else {
+		fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(array, null, '\t'), (err) => {
+			if (err) throw err;
+			
+			remote.getCurrentWindow().close();
+		});
+	}
 }
