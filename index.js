@@ -38,7 +38,7 @@ let docFrag = document.createDocumentFragment(),
 		if (pFiles.length > 0) {
 			addFiles(pFiles);
 		} else {
-			remote.getCurrentWindow().close();
+			app.quit();
 		}
 		
 		// If there are unprocessed images, save list of files
@@ -161,14 +161,14 @@ function addFiles(array) {
 			fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
 				if (err) throw err;
 				
-				remote.getCurrentWindow().close();
+				app.quit();
 			});
 		});
 	} else {
 		fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(array, null, '\t'), (err) => {
 			if (err) throw err;
 			
-			remote.getCurrentWindow().close();
+			app.quit();
 		});
 	}
 }
