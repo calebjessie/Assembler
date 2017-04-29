@@ -15,7 +15,7 @@ const remote = require('electron').remote,
 
 let docFrag = document.createDocumentFragment(),
 	pFiles = [],
-	uArray = {};
+	uArray = [];
 
 
 // Create window controls and browse functionality
@@ -34,19 +34,24 @@ let docFrag = document.createDocumentFragment(),
 
 	document.getElementById('close-btn').addEventListener('click', () => {
 
-		// Only if images have been processed, add them to the files.json.
+		// Only if images have been processed, add them to the files.json and save unprocessed.
 		if (pFiles.length > 0) {
 			addFiles(pFiles);
 		} else {
 			app.quit();
 		}
 		
-		// If there are unprocessed images, save list of files
-		if (Object.keys(uArray).length > 0) {
+		// All images processed? Remove file. If not, save list.
+		if (Object.keys(uArray).length === 0) {
+			fs.unlink(unFiles, (err) => {
+				if (err) throw err;
+			});
+		} else {
 			fs.writeFile(path.join(app.getPath('userData'), 'unprocessed.json'), JSON.stringify(uArray, null, '\t'), (err) => {
 				if (err) console.log(err);
 			});
 		}
+		
 	}, false);
 	
 	// If files have been processed, display them
@@ -79,24 +84,32 @@ ipcRenderer.on('getAssets', (event, filtered) => {
 
 // Process and append each asset
 function initAssets(array) {
-	uArray = Object.assign({}, array);
+	uArray = (JSON.parse(JSON.stringify(array))); // Duplicate array
 	
 	for (let i = Object.keys(array).length - 1; i >= 0; i--) {
 		(async function process() {
-			let src = array[i].path.replace(/\\/g,"/");
-			let image = await pImg.processImages(src, i);
-			let formattedPath = image.replace(/\\/g,"/");
+			let src = array[i].path.replace(/\\/g,"/"),
+				fileName = path.basename(array[i].path).replace(/\.[^.]+$/g,""),
+				image = await pImg.processImages(src, i),
+				formattedPath = image.replace(/\\/g,"/");
 
-			pFiles.push({file: formattedPath});
+			pFiles.push({file: formattedPath, name: fileName});
 
-			let divImg = document.createElement('div');
+			let divImg = document.createElement('div'),
+				imgName = document.createElement('p'),
+				text = document.createTextNode(fileName);
+			
 			divImg.className = 'asset-img';
 			divImg.style.backgroundImage = 'url("' + formattedPath + '")';
+			
+			imgName.className = 'asset-title';
 
 			docFrag.appendChild(divImg);
+			divImg.appendChild(imgName);
+			imgName.appendChild(text);
 			document.getElementById('asset-feed').appendChild(docFrag);
 			
-			delete uArray[i];
+			uArray.splice(i, 1);
 			
 			// If at end of array, save json. Prevent overwritting.
 			if (i === 0) {
@@ -105,7 +118,7 @@ function initAssets(array) {
 						if (err) throw err;
 
 						const jsonFiles = JSON.parse(data),
-							  newFiles = Object.assign(jsonFiles, array);
+							  newFiles = jsonFiles.concat(pFiles);
 
 						fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
 							if (err) throw err;
@@ -117,20 +130,13 @@ function initAssets(array) {
 					});
 				}
 			}
-			
-			// Remove unprocessed.json file - all files finished.
-			if (fs.existsSync(jFiles) && Object.keys(uArray).length === 0) {
-				fs.unlink(unFiles, (err) => {
-					if (err) throw err;
-				});
-			}
 		})();
 	}
 }
 
 // Displays processed files
 function jsonDisplay() {
-	let jsonFiles = {};
+	let jsonFiles = [];
 	
 	fs.readFile(jFiles, (err, data) => {
 		if (err) throw err;
@@ -138,12 +144,20 @@ function jsonDisplay() {
 		jsonFiles = JSON.parse(data);
 		
 		for (let i = 0; i < jsonFiles.length; i++) {
-			let src = jsonFiles[i].file;
-			let divImg = document.createElement('div');
+			let src = jsonFiles[i].file,
+				fileName = path.basename(jsonFiles[i].file).replace(/\.[^.]+$/g,""),
+				divImg = document.createElement('div'),
+				imgName = document.createElement('p'),
+				text = document.createTextNode(fileName);
+			
 			divImg.className = 'asset-img';
 			divImg.style.backgroundImage = 'url("' + src + '")';
+			
+			imgName.className = 'asset-title';
 
 			docFrag.appendChild(divImg);
+			divImg.appendChild(imgName);
+			imgName.appendChild(text);
 			document.getElementById('asset-feed').appendChild(docFrag);
 		}
 	});
@@ -156,7 +170,7 @@ function addFiles(array) {
 			if (err) throw err;
 
 			const jsonFiles = JSON.parse(data),
-				  newFiles = Object.assign(jsonFiles, array);
+				  newFiles = jsonFiles.concat(array);
 
 			fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
 				if (err) throw err;

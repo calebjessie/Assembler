@@ -46,7 +46,6 @@ header {
 .asset-img {
     width: 300px;
     height: 200px;
-    overflow: hidden;
     margin: 25px;
 	text-align: center;
 	background-size: cover;
@@ -54,6 +53,12 @@ header {
 .asset-img img {
     width: auto;
     height: 100%;
+}
+.asset-title {
+	text-align: left;
+	position: absolute;
+	bottom: -40px;
+	font-size: 14px;
 }
 .img-hover {
 	background-color: rgb(0,0,0);
