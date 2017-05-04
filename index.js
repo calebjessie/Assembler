@@ -132,6 +132,21 @@ function process(image, count) {
 	}
 };
 
+// Displays processed files
+function jsonDisplay() {
+	let jsonFiles = [];
+	
+	fs.readFile(jFiles, (err, data) => {
+		if (err) throw err;
+		
+		jsonFiles = JSON.parse(data);
+		
+		for (let i = 0; i < jsonFiles.length; i++) {
+			genHtml(jsonFiles[i].name, jsonFiles[i].file);
+		}
+	});
+}
+
 // Create HTML elements and display images
 function genHtml(fName, fPath) {
 	// Create html elements
@@ -149,35 +164,6 @@ function genHtml(fName, fPath) {
 	divImg.appendChild(imgName);
 	imgName.appendChild(text);
 	document.getElementById('asset-feed').appendChild(docFrag);
-}
-
-// Displays processed files
-function jsonDisplay() {
-	let jsonFiles = [];
-	
-	fs.readFile(jFiles, (err, data) => {
-		if (err) throw err;
-		
-		jsonFiles = JSON.parse(data);
-		
-		for (let i = 0; i < jsonFiles.length; i++) {
-			let src = jsonFiles[i].file,
-				fileName = path.basename(jsonFiles[i].file).replace(/\.[^.]+$/g,""),
-				divImg = document.createElement('div'),
-				imgName = document.createElement('p'),
-				text = document.createTextNode(fileName);
-			
-			divImg.className = 'asset-img';
-			divImg.style.backgroundImage = 'url("' + src + '")';
-			
-			imgName.className = 'asset-title';
-
-			docFrag.appendChild(divImg);
-			divImg.appendChild(imgName);
-			imgName.appendChild(text);
-			document.getElementById('asset-feed').appendChild(docFrag);
-		}
-	});
 }
 
 // Adds newly processed files to json file - Can use in initAssets()

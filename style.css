@@ -49,6 +49,7 @@ header {
     margin: 25px;
 	text-align: center;
 	background-size: cover;
+	position: relative;
 }
 .asset-img img {
     width: auto;
