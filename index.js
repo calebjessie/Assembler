@@ -34,8 +34,9 @@ let docFrag = document.createDocumentFragment(),
 
 	document.getElementById('close-btn').addEventListener('click', () => {
 
-		// Only if images have been processed, add them to the files.json and save unprocessed.
-		if (pFiles.length > 0) {
+		// Add processed images to files.json if app quit before finishing
+		// Figure out a way to run an app.quit() after adding files. PROMISES!
+		if (pFiles.length > 0 && uArray.length != 0) {
 			addFiles(pFiles);
 		} else {
 			app.quit();
@@ -47,7 +48,7 @@ let docFrag = document.createDocumentFragment(),
 				if (err) throw err;
 			});
 		} else {
-			fs.writeFile(path.join(app.getPath('userData'), 'unprocessed.json'), JSON.stringify(uArray, null, '\t'), (err) => {
+			fs.writeFile(unFiles, JSON.stringify(uArray, null, '\t'), (err) => {
 				if (err) console.log(err);
 			});
 		}
@@ -71,6 +72,7 @@ let docFrag = document.createDocumentFragment(),
 		});
 	}
 	
+	// Send message to main process to load files
 	document.getElementById('browse-files').addEventListener('click', () => {
 		ipcRenderer.send('loadAssets');
 	});
@@ -82,56 +84,71 @@ ipcRenderer.on('getAssets', (event, filtered) => {
 	initAssets(filtered);
 });
 
-// Process and append each asset
+// Process and append each asset - HTML element creation adds bloat to code :(
 function initAssets(array) {
 	uArray = (JSON.parse(JSON.stringify(array))); // Duplicate array
 	
 	for (let i = Object.keys(array).length - 1; i >= 0; i--) {
-		(async function process() {
-			let src = array[i].path.replace(/\\/g,"/"),
-				fileName = path.basename(array[i].path).replace(/\.[^.]+$/g,""),
-				image = await pImg.processImages(src, i),
-				formattedPath = image.replace(/\\/g,"/");
-
-			pFiles.push({file: formattedPath, name: fileName});
-
-			let divImg = document.createElement('div'),
-				imgName = document.createElement('p'),
-				text = document.createTextNode(fileName);
-			
-			divImg.className = 'asset-img';
-			divImg.style.backgroundImage = 'url("' + formattedPath + '")';
-			
-			imgName.className = 'asset-title';
-
-			docFrag.appendChild(divImg);
-			divImg.appendChild(imgName);
-			imgName.appendChild(text);
-			document.getElementById('asset-feed').appendChild(docFrag);
-			
-			uArray.splice(i, 1);
-			
-			// If at end of array, save json. Prevent overwritting.
-			if (i === 0) {
-				if (fs.existsSync(jFiles)) {
-					fs.readFile(jFiles, (err, data) => {
-						if (err) throw err;
-
-						const jsonFiles = JSON.parse(data),
-							  newFiles = jsonFiles.concat(pFiles);
-
-						fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
-							if (err) throw err;
-						});
-					});
-				} else {
-					fs.writeFile(jFiles, JSON.stringify(pFiles), (err) => {
-						if (err) console.log(err);
-					});
-				}
-			}
-		})();
+		process(array, i);
 	}
+}
+
+// Process Images
+function process(image, count) {
+	// Format path strings
+	let src = image[count].path.replace(/\\/g,"/"),
+		fileName = path.basename(image[count].path).replace(/\.[^.]+$/g,"");
+	
+	// Process image then execute appropriate code
+	pImg.processImages(src, count).then((path) => {
+		let formattedPath = path.replace(/\\/g,"/");
+		
+		// Remove processed image from array and push file info to array
+		uArray.splice(count, 1);
+		pFiles.push({file: formattedPath, name: fileName});
+		
+		// Create html for images
+		genHtml(fileName, formattedPath);
+	});
+
+	// If at end of array, save json. Prevent overwritting. Use addFiles()
+	if (count === 0) {
+		if (fs.existsSync(jFiles)) {
+			fs.readFile(jFiles, (err, data) => {
+				if (err) throw err;
+
+				const jsonFiles = JSON.parse(data),
+					  newFiles = jsonFiles.concat(pFiles);
+
+				fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
+					if (err) throw err;
+				});
+			});
+		} else {
+			fs.writeFile(jFiles, JSON.stringify(pFiles), (err) => {
+				if (err) console.log(err);
+			});
+		}
+	}
+};
+
+// Create HTML elements and display images
+function genHtml(fName, fPath) {
+	// Create html elements
+	let divImg = document.createElement('div'),
+		imgName = document.createElement('p'),
+		text = document.createTextNode(fName);
+
+	// Create styles and add file path to div
+	divImg.className = 'asset-img';
+	imgName.className = 'asset-title';
+	divImg.style.backgroundImage = 'url("' + fPath + '")';
+
+	// Append elements to containers
+	docFrag.appendChild(divImg);
+	divImg.appendChild(imgName);
+	imgName.appendChild(text);
+	document.getElementById('asset-feed').appendChild(docFrag);
 }
 
 // Displays processed files
@@ -163,7 +180,7 @@ function jsonDisplay() {
 	});
 }
 
-// Adds newly processed files to json file
+// Adds newly processed files to json file - Can use in initAssets()
 function addFiles(array) {
 	if (fs.existsSync(jFiles)) {
 		fs.readFile(jFiles, (err, data) => {
@@ -179,7 +196,7 @@ function addFiles(array) {
 			});
 		});
 	} else {
-		fs.writeFile(path.join(app.getPath('userData'), 'files.json'), JSON.stringify(array, null, '\t'), (err) => {
+		fs.writeFile(jFiles, JSON.stringify(array, null, '\t'), (err) => {
 			if (err) throw err;
 			
 			app.quit();
