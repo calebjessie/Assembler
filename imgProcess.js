@@ -5,7 +5,7 @@ const sharp = require('sharp'),
 	  path = require('path');
 
 // Resize images on child process
-exports.processImages = (imgPath, count) => {
+exports.processImage = (imgPath, count) => {
 	return new Promise((resolve, reject) => {
 		let sharpImg = sharp(imgPath),
 			thumb = path.join(app.getPath('userData'), '.thumbnails'),
@@ -16,7 +16,7 @@ exports.processImages = (imgPath, count) => {
 			.resize(400, null)
 			.webp()
 			.toFile(fullPath)
-			.then(resolve(fullPath))
+			.then( data => resolve(fullPath))
 			.catch( err => reject(err));
 	});
 }

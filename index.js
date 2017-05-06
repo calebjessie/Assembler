@@ -17,7 +17,6 @@ let docFrag = document.createDocumentFragment(),
 	pFiles = [],
 	uArray = [];
 
-
 // Create window controls and browse functionality
 (function() {
 	document.getElementById('min-btn').addEventListener('click', () => {
@@ -36,14 +35,14 @@ let docFrag = document.createDocumentFragment(),
 
 		// Add processed images to files.json if app quit before finishing
 		// Figure out a way to run an app.quit() after adding files. PROMISES!
-		if (pFiles.length > 0 && uArray.length != 0) {
+		if (pFiles.length > 0) {
 			addFiles(pFiles);
 		} else {
 			app.quit();
 		}
 		
 		// All images processed? Remove file. If not, save list.
-		if (Object.keys(uArray).length === 0) {
+		if (uArray.length === 0) {
 			fs.unlink(unFiles, (err) => {
 				if (err) throw err;
 			});
@@ -68,6 +67,7 @@ let docFrag = document.createDocumentFragment(),
 			if (err) throw err;
 			
 			const unprocessedJson = JSON.parse(data);
+			uArray = unprocessedJson;
 			initAssets(unprocessedJson);
 		});
 	}
@@ -81,15 +81,36 @@ let docFrag = document.createDocumentFragment(),
 // Displays assets once browse btn is clicked
 ipcRenderer.on('getAssets', (event, filtered) => {	
 	document.getElementById('browse').style.display = 'none';
+	
+	uArray = filtered;
 	initAssets(filtered);
+	
 });
 
-// Process and append each asset - HTML element creation adds bloat to code :(
+// Process and append each asset
 function initAssets(array) {
-	uArray = (JSON.parse(JSON.stringify(array))); // Duplicate array
-	
-	for (let i = Object.keys(array).length - 1; i >= 0; i--) {
+	for (let i = array.length; i-- > 0;) {
 		process(array, i);
+		
+		// If at end of array, save json. Prevent overwritting. Use addFiles()
+		if (i === 0) {
+			if (fs.existsSync(jFiles)) {
+				fs.readFile(jFiles, (err, data) => {
+					if (err) throw err;
+
+					const jsonFiles = JSON.parse(data),
+						  newFiles = jsonFiles.concat(pFiles);
+
+					fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
+						if (err) throw err;
+					});
+				});
+			} else {
+				fs.writeFile(jFiles, JSON.stringify(pFiles), (err) => {
+					if (err) console.log(err);
+				});
+			}
+		}
 	}
 }
 
@@ -99,37 +120,21 @@ function process(image, count) {
 	let src = image[count].path.replace(/\\/g,"/"),
 		fileName = path.basename(image[count].path).replace(/\.[^.]+$/g,"");
 	
-	// Process image then execute appropriate code
-	pImg.processImages(src, count).then((path) => {
+	// Process image
+	pImg.processImage(src, count).then((path) => {
 		let formattedPath = path.replace(/\\/g,"/");
 		
-		// Remove processed image from array and push file info to array
-		uArray.splice(count, 1);
+		// Push file info to array
 		pFiles.push({file: formattedPath, name: fileName});
+		
+		// Filter out processed image from array
+		uArray = uArray.filter(item => item.path != image[count].path);
 		
 		// Create html for images
 		genHtml(fileName, formattedPath);
+		
+		console.log(uArray);
 	});
-
-	// If at end of array, save json. Prevent overwritting. Use addFiles()
-	if (count === 0) {
-		if (fs.existsSync(jFiles)) {
-			fs.readFile(jFiles, (err, data) => {
-				if (err) throw err;
-
-				const jsonFiles = JSON.parse(data),
-					  newFiles = jsonFiles.concat(pFiles);
-
-				fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
-					if (err) throw err;
-				});
-			});
-		} else {
-			fs.writeFile(jFiles, JSON.stringify(pFiles), (err) => {
-				if (err) console.log(err);
-			});
-		}
-	}
 };
 
 // Displays processed files
