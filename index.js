@@ -132,8 +132,6 @@ function process(image, count) {
 		
 		// Create html for images
 		genHtml(fileName, formattedPath);
-		
-		console.log(uArray);
 	});
 };
 
