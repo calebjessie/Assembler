@@ -155,16 +155,18 @@ function genHtml(fName, fPath) {
 	// Create html elements
 	let divImg = document.createElement('div'),
 		imgName = document.createElement('p'),
+		img = document.createElement('img'),
 		text = document.createTextNode(fName);
 
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
 	imgName.className = 'asset-title';
-	divImg.style.backgroundImage = 'url("' + fPath + '")';
+	img.src = fPath;
 
 	// Append elements to containers
 	docFrag.appendChild(divImg);
 	divImg.appendChild(imgName);
+	divImg.appendChild(img);
 	imgName.appendChild(text);
 	document.getElementById('asset-feed').appendChild(docFrag);
 }
