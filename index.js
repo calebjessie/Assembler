@@ -3,6 +3,7 @@
 require("babel-core").transform("code");
 
 const {ipcRenderer} = require('electron');
+const {shell} = require('electron');
 const {requireTaskPool} = require('electron-remote');
 const {app} = require('electron').remote;
 
@@ -76,6 +77,13 @@ let docFrag = document.createDocumentFragment(),
 	document.getElementById('browse-files').addEventListener('click', () => {
 		ipcRenderer.send('loadAssets');
 	});
+	
+/*	// Create listeners for image grid
+	document.querySElector('div').addEventListener('mouseenter', () => {
+		if (event.target.tagName.toLowerCase() === 'div') {
+			document.getElementsByClassName('open-btn').style.display = 'block';
+		}
+	});*/
 })();
 
 // Displays assets once browse btn is clicked
@@ -84,7 +92,6 @@ ipcRenderer.on('getAssets', (event, filtered) => {
 	
 	uArray = filtered;
 	initAssets(filtered);
-	
 });
 
 // Process and append each asset
@@ -154,19 +161,33 @@ function jsonDisplay() {
 function genHtml(fName, fPath) {
 	// Create html elements
 	let divImg = document.createElement('div'),
+		imageNode = document.createElement('div'),
 		imgName = document.createElement('p'),
 		img = document.createElement('img'),
-		text = document.createTextNode(fName);
+		text = document.createTextNode(fName),
+		openBtn = document.createElement('div');
 
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
 	imgName.className = 'asset-title';
+	imageNode.className = 'image-node';
+	openBtn.className = 'open-btn';
 	img.src = fPath;
+	
+	// Add event listeners
+	imageNode.addEventListener('mouseenter', () => {
+		openBtn.style.display = 'block';
+	});
+	imageNode.addEventListener('mouseleave', () => {
+		openBtn.style.display = 'none';
+	});
 
 	// Append elements to containers
 	docFrag.appendChild(divImg);
+	divImg.appendChild(imageNode);
 	divImg.appendChild(imgName);
-	divImg.appendChild(img);
+	divImg.appendChild(openBtn);
+	imageNode.appendChild(img);
 	imgName.appendChild(text);
 	document.getElementById('asset-feed').appendChild(docFrag);
 }
@@ -193,4 +214,9 @@ function addFiles(array) {
 			app.quit();
 		});
 	}
+}
+
+// Open file in folder
+function openFile(path) {
+	shell.showItemInFolder(path);
 }

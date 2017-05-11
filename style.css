@@ -48,12 +48,21 @@ header {
     height: 200px;
     margin: 25px;
 	position: relative;
-	overflow: hidden;
 	display: flex;
 	background-color: rgba(0, 0, 0, 0.2);
 }
-.asset-img img {
+.asset-img:hover {
+	background-color: rgba(255, 104, 104, 0.5);
+}
+.image-node img {
     margin: auto;
+}
+.asset-img:hover .image-node img {
+	filter: grayscale(90%) opacity(50%);
+}
+.image-node {
+	overflow: hidden;
+	display: flex;
 }
 .asset-title {
 	text-align: left;
@@ -65,4 +74,15 @@ header {
 	background-color: rgb(0,0,0);
 	opacity: 0.5;
 	cursor: pointer;
+}
+.open-btn {
+	display: none;
+	width: 50px;
+	height: 50px;
+	background-color: darkorange;
+	position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -25px;
+    margin-top: -25px;
 }
