@@ -125,13 +125,13 @@ function process(image, count) {
 		let formattedPath = path.replace(/\\/g,"/");
 		
 		// Push file info to array
-		pFiles.push({file: formattedPath, name: fileName});
+		pFiles.push({file: formattedPath, name: fileName, og: src});
 		
 		// Filter out processed image from array
 		uArray = uArray.filter(item => item.path != image[count].path);
 		
 		// Create html for images
-		genHtml(fileName, formattedPath);
+		genHtml(fileName, formattedPath, src);
 	});
 };
 
@@ -145,13 +145,13 @@ function jsonDisplay() {
 		jsonFiles = JSON.parse(data);
 		
 		for (let i = 0; i < jsonFiles.length; i++) {
-			genHtml(jsonFiles[i].name, jsonFiles[i].file);
+			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og);
 		}
 	});
 }
 
 // Create HTML elements and display images
-function genHtml(fName, fPath) {
+function genHtml(fName, fPath, ogPath) {
 	// Create html elements
 	let divImg = document.createElement('div'),
 		imageNode = document.createElement('div'),
@@ -170,15 +170,20 @@ function genHtml(fName, fPath) {
 	openTxt.className = 'open-txt';
 	img.src = fPath;
 	
-	// Add event listeners
+	// Add hover events
 	imageNode.addEventListener('mouseover', () => {
 		openBtn.style.display = 'block';
 		openTxt.style.display = 'block';
-	});
+	}, false);
 	imageNode.addEventListener('mouseout', () => {
 		openBtn.style.display = 'none';
 		openTxt.style.display = 'none';
-	});
+	}, false);
+	
+	// Add click events
+	openBtn.addEventListener('click', () => {
+		shell.showItemInFolder(ogPath);
+	}, false);
 
 	// Append elements to containers
 	docFrag.appendChild(divImg);
@@ -214,9 +219,4 @@ function addFiles(array) {
 			app.quit();
 		});
 	}
-}
-
-// Open file in folder
-function openFile(path) {
-	shell.showItemInFolder(path);
 }
