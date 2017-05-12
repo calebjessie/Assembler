@@ -77,13 +77,6 @@ let docFrag = document.createDocumentFragment(),
 	document.getElementById('browse-files').addEventListener('click', () => {
 		ipcRenderer.send('loadAssets');
 	});
-	
-/*	// Create listeners for image grid
-	document.querySElector('div').addEventListener('mouseenter', () => {
-		if (event.target.tagName.toLowerCase() === 'div') {
-			document.getElementsByClassName('open-btn').style.display = 'block';
-		}
-	});*/
 })();
 
 // Displays assets once browse btn is clicked
@@ -165,21 +158,26 @@ function genHtml(fName, fPath) {
 		imgName = document.createElement('p'),
 		img = document.createElement('img'),
 		text = document.createTextNode(fName),
-		openBtn = document.createElement('div');
+		openBtn = document.createElement('div'),
+		openTxt = document.createElement('p'),
+		openTxtValue = document.createTextNode('open file location');
 
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
 	imgName.className = 'asset-title';
 	imageNode.className = 'image-node';
 	openBtn.className = 'open-btn';
+	openTxt.className = 'open-txt';
 	img.src = fPath;
 	
 	// Add event listeners
 	imageNode.addEventListener('mouseover', () => {
 		openBtn.style.display = 'block';
+		openTxt.style.display = 'block';
 	});
 	imageNode.addEventListener('mouseout', () => {
 		openBtn.style.display = 'none';
+		openTxt.style.display = 'none';
 	});
 
 	// Append elements to containers
@@ -188,6 +186,8 @@ function genHtml(fName, fPath) {
 	divImg.appendChild(imgName);
 	imageNode.appendChild(openBtn);
 	imageNode.appendChild(img);
+	imageNode.appendChild(openTxt);
+	openTxt.appendChild(openTxtValue);
 	imgName.appendChild(text);
 	document.getElementById('asset-feed').appendChild(docFrag);
 }
