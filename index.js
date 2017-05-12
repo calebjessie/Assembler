@@ -175,10 +175,10 @@ function genHtml(fName, fPath) {
 	img.src = fPath;
 	
 	// Add event listeners
-	imageNode.addEventListener('mouseenter', () => {
+	imageNode.addEventListener('mouseover', () => {
 		openBtn.style.display = 'block';
 	});
-	imageNode.addEventListener('mouseleave', () => {
+	imageNode.addEventListener('mouseout', () => {
 		openBtn.style.display = 'none';
 	});
 
@@ -186,7 +186,7 @@ function genHtml(fName, fPath) {
 	docFrag.appendChild(divImg);
 	divImg.appendChild(imageNode);
 	divImg.appendChild(imgName);
-	divImg.appendChild(openBtn);
+	imageNode.appendChild(openBtn);
 	imageNode.appendChild(img);
 	imgName.appendChild(text);
 	document.getElementById('asset-feed').appendChild(docFrag);
