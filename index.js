@@ -10,7 +10,7 @@ const {app} = require('electron').remote;
 const remote = require('electron').remote,
 	  fs = require('fs'),
 	  path = require('path'),
-	  pImg = requireTaskPool(require.resolve('./imgProcess')),
+	  pImg = requireTaskPool(require.resolve('./scripts/imgProcess')),
 	  jFiles = path.join(app.getPath('userData'), 'files.json'),
 	  unFiles = path.join(app.getPath('userData'), 'unprocessed.json');
 
