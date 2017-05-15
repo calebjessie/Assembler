@@ -160,7 +160,8 @@ function genHtml(fName, fPath, ogPath) {
 		text = document.createTextNode(fName),
 		openBtn = document.createElement('div'),
 		openTxt = document.createElement('p'),
-		openTxtValue = document.createTextNode('open file location');
+		openTxtValue = document.createTextNode('open file location'),
+		openIcon = document.createElement('img');
 
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
@@ -168,6 +169,8 @@ function genHtml(fName, fPath, ogPath) {
 	imageNode.className = 'image-node';
 	openBtn.className = 'open-btn';
 	openTxt.className = 'open-txt';
+	openIcon.classList = 'open-icon';
+	openIcon.src = './assets/open-icon.png';
 	img.src = fPath;
 	
 	// Add hover events
@@ -194,6 +197,7 @@ function genHtml(fName, fPath, ogPath) {
 	imageNode.appendChild(openTxt);
 	openTxt.appendChild(openTxtValue);
 	imgName.appendChild(text);
+	openBtn.appendChild(openIcon);
 	document.getElementById('asset-feed').appendChild(docFrag);
 }
 

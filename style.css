@@ -58,7 +58,7 @@ header {
 .image-node img {
     margin: auto;
 }
-.asset-img:hover .image-node img {
+.asset-img:hover .image-node > img {
 	filter: grayscale(90%) opacity(50%);
 }
 .image-node {
@@ -87,6 +87,17 @@ header {
 }
 .open-btn:hover {
 	background-color: rgb(255, 129, 36);
+}
+img.open-icon {
+	width: 50%;
+	margin: 18px;
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+	img.open-icon {
+		width: 100%;
+		height: 100%;
+		margin: 36px;
+	}
 }
 .open-txt {
 	display: none;
