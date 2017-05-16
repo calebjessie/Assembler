@@ -19,9 +19,43 @@ header {
 	position: fixed;
 	top: 0px;
 }
-.branding, .search, .window-controls {
+.branding, .search, .settings, .window-controls {
 	-webkit-app-region: no-drag;
 	display: inline-block;
+}
+.branding {
+	margin-top: -5px;
+    margin-right: 20px;
+	float: left;
+}
+.search {
+    float: left;
+	display: table;
+	border-collapse: separate;
+	width: 50%;
+}
+div.mdl-textfield {
+	width: 90%;
+	padding: 24px 0;
+}
+input#searchBar.mdl-textfield__input {
+	background: #fff;
+	padding: 8px 0;
+}
+label.mdl-textfield__label {
+	left: 10px;
+	top: 32px;
+}
+.filter-btn {
+	display: inline-block;
+}
+.filter-options {
+	display: none;
+}
+.window-controls {
+	float: right;
+	margin-right: 50px;
+	margin-top: 25px;
 }
 #container {
 	position: fixed;

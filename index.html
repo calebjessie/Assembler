@@ -4,22 +4,32 @@
 	<meta charset="UTF-8">
 	<title>Design Asset Manager</title>
 	
-	<link rel="stylesheet" href="style.css" type="text/css">
+	<link rel="stylesheet" href="styles/style.css" type="text/css">
+	<link rel="stylesheet" href="styles/mdl/material.min.css" type="text/css">
 </head>
 <body>
 	<header>
 		<div class="branding">
-			<h1>Design Assets</h1>
-			<span class="change-dir">Change Directory</span>
+			<h3>Design Assets</h3>
 		</div>
 		<div class="search">
-			<span class="search-filters" >Filters</span>
-			<form action="">
-				<input type="text" placeholder="Search for assets" />
-				<input type="submit" value="Search" />
-			</form>
+			<div class="mdl-textfield mdl-js-textfield">
+				<input type="text" class="mdl-textfield__input" id="searchBar">
+				<label for="searchBar" class="mdl-textfield__label">Search for assets</label>
+			</div>
+			<div class="filter-btn">
+				<button class="search-filters" >Filters</button>
+				<ul class="filter-options">
+					<li>Item</li>
+					<li>Item</li>
+					<li>Item</li>
+					<li>Item</li>
+					<li>Item</li>
+				</ul>
+			</div>
 		</div>
 		<div class="window-controls">
+			<div class="settings">O</div>
 			<button id="min-btn">-</button>
 			<button id="max-btn">+</button>
 			<button id="close-btn">X</button>
@@ -35,5 +45,6 @@
 	</div>
 	
 <script>require('./index.js')</script>
+<script src="./styles/mdl/material.min.js"></script>
 </body>
 </html>
