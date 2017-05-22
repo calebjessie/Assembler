@@ -98,7 +98,7 @@ ipcMain.on('loadAssets', (event, args) => {
 			if (err) return err;
 		});
 		
-		event.sender.send('getAssets', filtered);
+		event.sender.send('getAssets', filtered, filePath);
 	});
 });
 

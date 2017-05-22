@@ -16,7 +16,8 @@ const remote = require('electron').remote,
 
 let docFrag = document.createDocumentFragment(),
 	pFiles = [],
-	uArray = [];
+	uArray = [],
+	jsonFiles = [];
 
 // Create window controls and browse functionality
 (function() {
@@ -77,20 +78,23 @@ let docFrag = document.createDocumentFragment(),
 	document.getElementById('browse-files').addEventListener('click', () => {
 		ipcRenderer.send('loadAssets');
 	});
+	
+	search();
 })();
 
 // Displays assets once browse btn is clicked
-ipcRenderer.on('getAssets', (event, filtered) => {	
+ipcRenderer.on('getAssets', (event, filtered, filePath) => {	
 	document.getElementById('browse').style.display = 'none';
 	
+	let aPath = filePath;
 	uArray = filtered;
-	initAssets(filtered);
+	initAssets(filtered, aPath);
 });
 
 // Process and append each asset
-function initAssets(array) {
+function initAssets(array, aPath) {
 	for (let i = array.length; i-- > 0;) {
-		process(array, i);
+		process(array, i, aPath);
 		
 		// If at end of array, save json. Prevent overwritting. Use addFiles()
 		if (i === 0) {
@@ -115,43 +119,43 @@ function initAssets(array) {
 }
 
 // Process Images
-function process(image, count) {
+function process(image, count, aPath) {
 	// Format path strings
 	let src = image[count].path.replace(/\\/g,"/"),
-		fileName = path.basename(image[count].path).replace(/\.[^.]+$/g,"");
+		fileName = path.basename(image[count].path).replace(/\.[^.]+$/g,""),
+		tagPath = image[count].path.replace(aPath, ""); // Remove dir from path
 	
 	// Process image
 	pImg.processImage(src, count).then((path) => {
-		let formattedPath = path.replace(/\\/g,"/");
+		let formattedPath = path.replace(/\\/g,"/"),
+			assetID = count.toString();
 		
 		// Push file info to array
-		pFiles.push({file: formattedPath, name: fileName, og: src});
+		pFiles.push({id: assetID, file: formattedPath, name: fileName, og: src});
 		
 		// Filter out processed image from array
 		uArray = uArray.filter(item => item.path != image[count].path);
 		
 		// Create html for images
-		genHtml(fileName, formattedPath, src);
+		genHtml(fileName, formattedPath, src, assetID);
 	});
 };
 
 // Displays processed files
 function jsonDisplay() {
-	let jsonFiles = [];
-	
 	fs.readFile(jFiles, (err, data) => {
 		if (err) throw err;
 		
 		jsonFiles = JSON.parse(data);
 		
 		for (let i = 0; i < jsonFiles.length; i++) {
-			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og);
+			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id);
 		}
 	});
 }
 
 // Create HTML elements and display images
-function genHtml(fName, fPath, ogPath) {
+function genHtml(fName, fPath, ogPath, id) {
 	// Create html elements
 	let divImg = document.createElement('div'),
 		imageNode = document.createElement('div'),
@@ -165,6 +169,7 @@ function genHtml(fName, fPath, ogPath) {
 
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
+	divImg.id = id;
 	imgName.className = 'asset-title';
 	imageNode.className = 'image-node';
 	openBtn.className = 'open-btn';
@@ -223,4 +228,33 @@ function addFiles(array) {
 			app.quit();
 		});
 	}
+}
+
+// Search assets
+function search() {
+	let elements = document.getElementsByClassName('asset-img');
+	
+	document.getElementById('searchBar').addEventListener('keyup', () => {
+		let searchVal = document.getElementById('searchBar').value,
+			results = filterSearch(jsonFiles, searchVal);
+
+		if (searchVal !== '') {
+			for (let i = 0; i < elements.length; i++) {
+				elements[i].style.display = 'none';
+			}
+		} else {
+			for (let i = 0; i < elements.length; i++) {
+				elements[i].style.display = 'flex';
+			}
+		}
+		
+		for (let i = 0; i < results.length; i++) {
+			console.log(results[i]);
+			document.getElementById(results[i].id).style.display = "flex";
+		}
+	});
+}
+
+function filterSearch(arr, searchString) {
+	return arr.filter(obj => Object.keys(obj).some(key => obj[key].includes(searchString)));
 }
