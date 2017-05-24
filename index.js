@@ -89,6 +89,15 @@ let docFrag = document.createDocumentFragment(),
 		ipcRenderer.send('loadAssets');
 	});
 	
+	// Add event listener for filter button
+/*	document.getElementById('filters').addEventListener('click', () => {
+		if (document.getElementById('filter-options').style.display === none) {
+			document.getElementById('filter-options').style.display === block;
+		} else {
+			document.getElementById('filter-options').style.display === none;
+		}
+	});*/
+	
 	search();
 })();
 
