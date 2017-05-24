@@ -12,12 +12,14 @@ const remote = require('electron').remote,
 	  path = require('path'),
 	  pImg = requireTaskPool(require.resolve('./scripts/imgProcess')),
 	  jFiles = path.join(app.getPath('userData'), 'files.json'),
-	  unFiles = path.join(app.getPath('userData'), 'unprocessed.json');
+	  unFiles = path.join(app.getPath('userData'), 'unprocessed.json'),
+	  dirFile = path.join(app.getPath('userData'), 'dir.json');
 
 let docFrag = document.createDocumentFragment(),
 	pFiles = [],
 	uArray = [],
-	jsonFiles = [];
+	jsonFiles = [],
+	dir;
 
 // Create window controls and browse functionality
 (function() {
@@ -36,7 +38,6 @@ let docFrag = document.createDocumentFragment(),
 	document.getElementById('close-btn').addEventListener('click', () => {
 
 		// Add processed images to files.json if app quit before finishing
-		// Figure out a way to run an app.quit() after adding files. PROMISES!
 		if (pFiles.length > 0) {
 			addFiles(pFiles);
 		} else {
@@ -55,6 +56,15 @@ let docFrag = document.createDocumentFragment(),
 		}
 		
 	}, false);
+		
+	// Fetch dir chosen by user
+	if (fs.existsSync(dirFile)) {
+		fs.readFile(dirFile, (err, data) => {
+			if (err) throw err;
+
+			dir = JSON.parse(data);
+		});
+	}
 	
 	// If files have been processed, display them
 	if (fs.existsSync(jFiles)) {
@@ -70,7 +80,7 @@ let docFrag = document.createDocumentFragment(),
 			
 			const unprocessedJson = JSON.parse(data);
 			uArray = unprocessedJson;
-			initAssets(unprocessedJson);
+			initAssets(unprocessedJson, dir[0]);
 		});
 	}
 	
@@ -85,14 +95,20 @@ let docFrag = document.createDocumentFragment(),
 // Displays assets once browse btn is clicked
 ipcRenderer.on('getAssets', (event, filtered, filePath) => {	
 	document.getElementById('browse').style.display = 'none';
+	let jsonFilePath = [filePath.replace(/\\/g,"\\") + "\\"];
 	
-	let aPath = filePath;
+	fs.writeFile(path.join(app.getPath('userData'), 'dir.json'), JSON.stringify(jsonFilePath, null, '\t'), (err) => {
+		if (err) console.log(err);
+	});
+	
+	let aPath = filePath + "\\";
 	uArray = filtered;
 	initAssets(filtered, aPath);
 });
 
 // Process and append each asset
 function initAssets(array, aPath) {
+	console.log(aPath);
 	for (let i = array.length; i-- > 0;) {
 		process(array, i, aPath);
 		
@@ -123,7 +139,10 @@ function process(image, count, aPath) {
 	// Format path strings
 	let src = image[count].path.replace(/\\/g,"/"),
 		fileName = path.basename(image[count].path).replace(/\.[^.]+$/g,""),
-		tagPath = image[count].path.replace(aPath, ""); // Remove dir from path
+		tagPath = image[count].path.replace(aPath, ""), // Remove dir from path
+		assetTags = tagPath.toLowerCase().replace(/\\/g," ").split(" "); // Create array of tags
+	
+	console.log(assetTags);
 	
 	// Process image
 	pImg.processImage(src, count).then((path) => {
@@ -131,7 +150,7 @@ function process(image, count, aPath) {
 			assetID = count.toString();
 		
 		// Push file info to array
-		pFiles.push({id: assetID, file: formattedPath, name: fileName, og: src});
+		pFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
 		
 		// Filter out processed image from array
 		uArray = uArray.filter(item => item.path != image[count].path);
