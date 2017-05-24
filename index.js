@@ -89,14 +89,22 @@ let docFrag = document.createDocumentFragment(),
 		ipcRenderer.send('loadAssets');
 	});
 	
-	// Add event listener for filter button
-/*	document.getElementById('filters').addEventListener('click', () => {
-		if (document.getElementById('filter-options').style.display === none) {
-			document.getElementById('filter-options').style.display === block;
-		} else {
-			document.getElementById('filter-options').style.display === none;
-		}
-	});*/
+	// Add event listener for filter options
+	document.getElementById('ftr-stock-photos').addEventListener('click', () => {
+		console.log("Stock Photos");
+	});
+	document.getElementById('ftr-icons').addEventListener('click', () => {
+		console.log("Icons");
+	});
+	document.getElementById('ftr-fonts').addEventListener('click', () => {
+		console.log("Fonts");
+	});
+	document.getElementById('ftr-mockups').addEventListener('click', () => {
+		console.log("Mockups");
+	});
+	document.getElementById('ftr-ui-elements').addEventListener('click', () => {
+		console.log("UI Elements");
+	});
 	
 	search();
 })();
