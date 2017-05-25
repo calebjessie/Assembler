@@ -90,20 +90,23 @@ let docFrag = document.createDocumentFragment(),
 	});
 	
 	// Add event listener for filter options
+	document.getElementById('ftr-clear').addEventListener('click', () => {
+		showEl();
+	});
 	document.getElementById('ftr-stock-photos').addEventListener('click', () => {
-		console.log("Stock Photos");
+		filters("stock");
 	});
 	document.getElementById('ftr-icons').addEventListener('click', () => {
-		console.log("Icons");
+		filters("icons");
 	});
 	document.getElementById('ftr-fonts').addEventListener('click', () => {
-		console.log("Fonts");
+		filters("fonts");
 	});
 	document.getElementById('ftr-mockups').addEventListener('click', () => {
-		console.log("Mockups");
+		filters("mockups");
 	});
 	document.getElementById('ftr-ui-elements').addEventListener('click', () => {
-		console.log("UI Elements");
+		filters("kits");
 	});
 	
 	search();
@@ -293,4 +296,33 @@ function search() {
 
 function filterSearch(arr, searchString) {
 	return arr.filter(obj => Object.keys(obj).some(key => obj[key].includes(searchString)));
+}
+
+// Promise version -- ATTEMPT
+function pFilterSearch(arr, searchString) {
+	return new Promise((resolve) => {
+		resolve(arr.filter(obj => Object.keys(obj).some(key => obj[key].includes(searchString))));
+	});
+}
+
+function filters(option) {
+	let elements = document.getElementsByClassName('asset-img');
+	
+	for (let i = 0; i < elements.length; i++) {
+		elements[i].style.display = 'none';
+	}
+	
+	pFilterSearch(jsonFiles, option).then((results) => {
+		for (let i = 0; i < results.length; i++) {
+			document.getElementById(results[i].id).style.display = "flex";
+		}
+	});
+}
+
+function showEl() {
+	let elements = document.getElementsByClassName('asset-img');
+	
+	for (let i = 0; i < elements.length; i++) {
+		elements[i].style.display = 'flex';
+	}
 }
