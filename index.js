@@ -19,6 +19,8 @@ let docFrag = document.createDocumentFragment(),
 	pFiles = [],
 	uArray = [],
 	jsonFiles = [],
+	progTotal = 0,
+	progAmt = 0,
 	dir;
 
 // Create window controls and browse functionality
@@ -128,10 +130,11 @@ ipcRenderer.on('getAssets', (event, filtered, filePath) => {
 
 // Process and append each asset
 function initAssets(array, aPath) {
-	console.log(aPath);
+	progTotal = array.length;
+	
 	for (let i = array.length; i-- > 0;) {
 		process(array, i, aPath);
-		
+
 		// If at end of array, save json. Prevent overwritting. Use addFiles()
 		if (i === 0) {
 			if (fs.existsSync(jFiles)) {
@@ -162,8 +165,6 @@ function process(image, count, aPath) {
 		tagPath = image[count].path.replace(aPath, ""), // Remove dir from path
 		assetTags = tagPath.toLowerCase().replace(/\\/g," ").split(" "); // Create array of tags
 	
-	console.log(assetTags);
-	
 	// Process image
 	pImg.processImage(src, count).then((path) => {
 		let formattedPath = path.replace(/\\/g,"/"),
@@ -172,11 +173,22 @@ function process(image, count, aPath) {
 		// Push file info to array
 		pFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
 		
+		jsonFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
+		
 		// Filter out processed image from array
 		uArray = uArray.filter(item => item.path != image[count].path);
 		
 		// Create html for images
 		genHtml(fileName, formattedPath, src, assetID);
+		
+		// Update progress bar
+		let progUp = (progAmt / progTotal) * 100;
+		
+		console.log(progUp.toFixed());
+		document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
+		
+		// Iterate progress
+		progAmt++;
 	});
 };
 
@@ -251,8 +263,8 @@ function addFiles(array) {
 		fs.readFile(jFiles, (err, data) => {
 			if (err) throw err;
 
-			const jsonFiles = JSON.parse(data),
-				  newFiles = jsonFiles.concat(array);
+			const j = JSON.parse(data),
+				  newFiles = j.concat(array);
 
 			fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
 				if (err) throw err;

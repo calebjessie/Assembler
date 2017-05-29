@@ -150,3 +150,14 @@ img.open-icon {
 	font-weight: bold;
 	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
+
+/* Progress Bar */
+div#progCont {
+    height: 50px;
+    width: 100%;
+    top: 110px;
+    position: fixed;
+}
+#progBar {
+	margin: 21px auto;
+}
