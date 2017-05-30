@@ -157,6 +157,8 @@ div#progCont {
     width: 100%;
     top: 110px;
     position: fixed;
+	z-index: 10;
+	background: #191919;
 }
 #progBar {
 	margin: 21px auto;

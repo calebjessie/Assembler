@@ -111,6 +111,9 @@ let docFrag = document.createDocumentFragment(),
 		filters("kits");
 	});
 	
+	// Initially hide progress bar
+	document.getElementById('progCont').style.display = 'none';
+	
 	search();
 })();
 
@@ -181,11 +184,7 @@ function process(image, count, aPath) {
 		// Create html for images
 		genHtml(fileName, formattedPath, src, assetID);
 		
-		// Update progress bar
-		let progUp = (progAmt / progTotal) * 100;
-		
-		console.log(progUp.toFixed());
-		document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
+		progressBar();
 		
 		// Iterate progress
 		progAmt++;
@@ -286,8 +285,7 @@ function search() {
 	let elements = document.getElementsByClassName('asset-img');
 	
 	document.getElementById('searchBar').addEventListener('keyup', () => {
-		let searchVal = document.getElementById('searchBar').value,
-			results = filterSearch(jsonFiles, searchVal);
+		let searchVal = document.getElementById('searchBar').value;
 
 		if (searchVal !== '') {
 			for (let i = 0; i < elements.length; i++) {
@@ -299,18 +297,15 @@ function search() {
 			}
 		}
 		
-		for (let i = 0; i < results.length; i++) {
-			console.log(results[i]);
-			document.getElementById(results[i].id).style.display = "flex";
-		}
+		pFilterSearch(jsonFiles, searchVal).then((results) => {
+			for (let i = 0; i < results.length; i++) {
+				console.log(results[i]);
+				document.getElementById(results[i].id).style.display = "flex";
+			}
+		});
 	});
 }
 
-function filterSearch(arr, searchString) {
-	return arr.filter(obj => Object.keys(obj).some(key => obj[key].includes(searchString)));
-}
-
-// Promise version -- ATTEMPT
 function pFilterSearch(arr, searchString) {
 	return new Promise((resolve) => {
 		resolve(arr.filter(obj => Object.keys(obj).some(key => obj[key].includes(searchString))));
@@ -337,4 +332,19 @@ function showEl() {
 	for (let i = 0; i < elements.length; i++) {
 		elements[i].style.display = 'flex';
 	}
+}
+
+// Show and update progress bar
+function progressBar() {
+	let progUp = (progAmt / progTotal) * 100;
+		
+	if (progUp.toFixed() != 100) {
+		document.getElementById('progCont').style.display = 'block';
+		document.getElementById('container').style.top = '160px';
+	} else {
+		setTimeout(() => {document.getElementById('progCont').style.display = 'none';}, 1000);
+		document.getElementById('container').style.top = '110px';
+	}
+	
+	document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
 }
