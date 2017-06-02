@@ -220,7 +220,7 @@ function genHtml(fName, fPath, ogPath, id) {
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
 	divImg.id = id;
-	imgName.className = 'asset-title';
+	//imgName.className = 'asset-title';
 	imageNode.className = 'image-node';
 	openBtn.className = 'open-btn';
 	openTxt.className = 'open-txt';
@@ -239,7 +239,7 @@ function genHtml(fName, fPath, ogPath, id) {
 	}, false);
 	
 	// Add click events
-	openBtn.addEventListener('click', () => {
+	imageNode.addEventListener('click', () => {
 		shell.showItemInFolder(ogPath);
 	}, false);
 
@@ -251,7 +251,7 @@ function genHtml(fName, fPath, ogPath, id) {
 	imageNode.appendChild(img);
 	imageNode.appendChild(openTxt);
 	openTxt.appendChild(openTxtValue);
-	imgName.appendChild(text);
+	//imgName.appendChild(text);
 	openBtn.appendChild(openIcon);
 	document.getElementById('asset-feed').appendChild(docFrag);
 }
@@ -297,7 +297,8 @@ function search() {
 			}
 		}
 		
-		pFilterSearch(jsonFiles, searchVal).then((results) => {
+		pFilterSearch(jsonFiles, searchVal.toLowerCase()).then((results) => {
+			console.log(searchVal.toLowerCase());
 			for (let i = 0; i < results.length; i++) {
 				console.log(results[i]);
 				document.getElementById(results[i].id).style.display = "flex";

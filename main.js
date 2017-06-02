@@ -38,7 +38,7 @@ function createWindow () {
 		slashes: true
 	}));
 	
-	win.webContents.openDevTools()
+	win.webContents.openDevTools();
 	
 	ses = win.webContents.session;
 	

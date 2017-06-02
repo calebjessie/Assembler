@@ -1,6 +1,6 @@
 body {
 	margin: 0;
-	background: #222425;
+	background: #f3f3f3;
 	color: #fff;
 	font-family: Source Sans Pro, sans-serif;
 }
@@ -10,10 +10,22 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
 	padding-bottom: 10px;
 }
+button {
+    background: none;
+    border: 0;
+	cursor: pointer;
+}
+button:active {
+	outline: 0;
+	border: none;
+}
+button:focus {
+	outline: 0;
+}
 header {
 	-webkit-app-region: drag;
 	padding: 15px 25px;
-	background: #313436;
+	background: #0042ff;
 	height: 80px;
 	width: 100%;
 	position: fixed;
@@ -23,6 +35,7 @@ header {
 .branding, .search, .settings, .window-controls {
 	-webkit-app-region: no-drag;
 	display: inline-block;
+	cursor: default;
 }
 .branding {
 	margin-top: -5px;
@@ -41,17 +54,93 @@ div.mdl-textfield {
 }
 input#searchBar.mdl-textfield__input {
 	background: #fff;
-	padding: 8px 0;
+	padding: 8px 10px;
+	color: #000;
 }
 label.mdl-textfield__label {
 	left: 10px;
 	top: 32px;
 }
+
+/* Window Controls */
+.window-controls button {
+	width: 16px;
+	height: 16px;
+	padding: 15px;
+}
+#settings {
+	background: url('../assets/settings-icon.png') no-repeat center center;
+	background-size: 21.5px 21.5px;
+	user-select: none;
+}
+#settings:hover {
+	background: url('../assets/settings-icon.png') #0034ca no-repeat center center;
+	background-size: 21.5px 21.5px;
+	user-select: none;
+}
+#min-btn {
+	background: url('../assets/minimize-icon.png') no-repeat bottom center;
+	background-size: 17px 1.5px;
+}
+#min-btn:hover {
+	background: url('../assets/minimize-icon.png') #0034ca no-repeat bottom center;
+	background-size: 17px 1.5px;
+}
+#max-btn {
+	background: url('../assets/expand-icon.png') no-repeat center center;
+	background-size: 16px 16px;
+}
+#max-btn:hover {
+	background: url('../assets/expand-icon.png') #0034ca no-repeat center center;
+	background-size: 16px 16px;
+}
+#close-btn {
+	background: url('../assets/exit-icon.png') no-repeat center center;
+	background-size: 17px 16.5px;
+}
+#close-btn:hover {
+	background: url('../assets/exit-icon.png') #0034ca no-repeat center center;
+	background-size: 17px 16.5px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+	.windows-controls button {
+		width: 32px;
+		height: 32px;
+	}
+	.settings {
+		width: 43px;
+		height: 43px;
+	}
+	#min-btn {
+		width: 34px;
+		height: 3px;
+	}
+	#max-btn {
+		width: 32px;
+		height: 32px;
+	}
+	#close-btn {
+		width: 34px;
+		height: 33px;
+	}
+}
+
+/* Filter */
 .filters {
 	-webkit-app-region: no-drag;
 	display: inline-block;
 	position: absolute;
-	top: 38px;
+	top: 39px;
+	border-left: 1px solid #d0d0d0;
+}
+button#filter-btn {
+	background-color: #fff;
+	border-radius: 0;
+	height: 35px;
+}
+button#filter-btn:hover {
+	background-color: #efefef;
 }
 #filter-options {
 	-webkit-app-region: no-drag;
@@ -84,25 +173,27 @@ label.mdl-textfield__label {
 	display: none;
 }
 .asset-img {
-    width: 300px;
-    height: 200px;
+    width: 350px;
+    height: 250px;
     margin: 25px;
 	position: relative;
 	display: flex;
 	background-color: rgba(0, 0, 0, 0.2);
 }
 .asset-img:hover {
-	background-color: rgba(255, 104, 104, 0.5);
+	background-color: rgba(0, 0, 0, 0.85);
 }
 .image-node img {
     margin: auto;
+	max-width: 100%;
 }
 .asset-img:hover .image-node > img {
-	filter: grayscale(90%) opacity(50%);
+	filter: grayscale(90%) opacity(30%);
 }
 .image-node {
 	overflow: hidden;
 	display: flex;
+	cursor: pointer;
 }
 .asset-title {
 	text-align: left;
@@ -114,7 +205,7 @@ label.mdl-textfield__label {
 	display: none;
 	width: 60px;
 	height: 60px;
-	background-color: rgb(255, 108, 0);
+	background-color: #fff;
 	position: absolute;
     top: 40%;
     left: 50%;
@@ -125,7 +216,7 @@ label.mdl-textfield__label {
 	cursor: pointer;
 }
 .open-btn:hover {
-	background-color: rgb(255, 129, 36);
+	background-color: rgb(225, 228, 236);
 }
 img.open-icon {
 	width: 50%;
@@ -146,7 +237,7 @@ img.open-icon {
 	z-index: 10;
 	text-transform: uppercase;
 	user-select: none;
-	cursor: default;
+	cursor: pointer;
 	font-weight: bold;
 	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
@@ -158,7 +249,7 @@ div#progCont {
     top: 110px;
     position: fixed;
 	z-index: 10;
-	background: #191919;
+	background: rgba(240, 240, 240, 0.9);
 }
 #progBar {
 	margin: 21px auto;
