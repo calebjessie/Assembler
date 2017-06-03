@@ -63,64 +63,72 @@ label.mdl-textfield__label {
 }
 
 /* Window Controls */
+.window-controls {
+	float: right;
+	margin-right: 50px;
+	margin-top: 22px;
+	position: relative
+}
 .window-controls button {
+	width: 35px;
+	height: 35px;
+	user-select: none;
+}
+button#settings {
+	margin-right: 15px;
+}
+button#min-btn {
+	margin-left: 15px;
+}
+.divider {
+	width: 1px;
+	height: 100%;
+	background-color: #0031bd;
+	display: inline-block;
+	position: absolute;
+	box-shadow: 1px 0 0 rgba(255,255,255,0.1);
+}
+#settings img {
+	width: 21.5px;
+	height: 21.5px;
+}
+#min-btn img {
+	width: 17px;
+	height: 1.5px;
+	padding-top: 16px;
+}
+#max-btn img {
 	width: 16px;
 	height: 16px;
-	padding: 15px;
 }
-#settings {
-	background: url('../assets/settings-icon.png') no-repeat center center;
-	background-size: 21.5px 21.5px;
-	user-select: none;
+#close-btn img {
+	width: 17px;
+	height: 16.5px;
 }
-#settings:hover {
-	background: url('../assets/settings-icon.png') #0034ca no-repeat center center;
-	background-size: 21.5px 21.5px;
-	user-select: none;
-}
-#min-btn {
-	background: url('../assets/minimize-icon.png') no-repeat bottom center;
-	background-size: 17px 1.5px;
-}
-#min-btn:hover {
-	background: url('../assets/minimize-icon.png') #0034ca no-repeat bottom center;
-	background-size: 17px 1.5px;
-}
-#max-btn {
-	background: url('../assets/expand-icon.png') no-repeat center center;
-	background-size: 16px 16px;
-}
-#max-btn:hover {
-	background: url('../assets/expand-icon.png') #0034ca no-repeat center center;
-	background-size: 16px 16px;
-}
-#close-btn {
-	background: url('../assets/exit-icon.png') no-repeat center center;
-	background-size: 17px 16.5px;
-}
-#close-btn:hover {
-	background: url('../assets/exit-icon.png') #0034ca no-repeat center center;
-	background-size: 17px 16.5px;
+
+#settings:hover, #min-btn:hover, #max-btn:hover, #close-btn:hover {
+	background-color: #0037d6;
 }
 
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
 	.windows-controls button {
-		width: 32px;
-		height: 32px;
+		width: 80px;
+		height: 80px;
 	}
-	.settings {
+	.settings img {
 		width: 43px;
 		height: 43px;
 	}
-	#min-btn {
+	#min-btn img {
 		width: 34px;
 		height: 3px;
+		padding-top: 32px;
 	}
-	#max-btn {
+	#max-btn img {
 		width: 32px;
 		height: 32px;
 	}
-	#close-btn {
+	#close-btn img {
 		width: 34px;
 		height: 33px;
 	}
@@ -144,11 +152,6 @@ button#filter-btn:hover {
 }
 #filter-options {
 	-webkit-app-region: no-drag;
-}
-.window-controls {
-	float: right;
-	margin-right: 50px;
-	margin-top: 25px;
 }
 #container {
 	position: fixed;
