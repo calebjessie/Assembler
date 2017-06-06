@@ -166,7 +166,7 @@ function process(image, count, aPath) {
 	let src = image[count].path.replace(/\\/g,"/"),
 		fileName = path.basename(image[count].path).replace(/\.[^.]+$/g,""),
 		tagPath = image[count].path.replace(aPath, ""), // Remove dir from path
-		assetTags = tagPath.toLowerCase().replace(/\\/g," ").split(" "); // Create array of tags
+		assetTags = tagPath.toLowerCase().replace(/\W|_/g," ").split(" "); // Create array of tags
 	
 	// Process image
 	pImg.processImage(src, count).then((path) => {
@@ -298,7 +298,6 @@ function search() {
 		}
 		
 		pFilterSearch(jsonFiles, searchVal.toLowerCase()).then((results) => {
-			console.log(searchVal.toLowerCase());
 			for (let i = 0; i < results.length; i++) {
 				console.log(results[i]);
 				document.getElementById(results[i].id).style.display = "flex";
@@ -309,7 +308,8 @@ function search() {
 
 function pFilterSearch(arr, searchString) {
 	return new Promise((resolve) => {
-		resolve(arr.filter(obj => Object.keys(obj).some(key => obj[key].includes(searchString))));
+		/*resolve(arr.filter(obj => Object.keys(obj).some(key => obj[key].includes(searchString))));*/
+		resolve(arr.filter(obj => obj.tags.some(tag => tag.includes(searchString))));
 	});
 }
 
