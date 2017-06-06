@@ -15,6 +15,8 @@ function createWindow () {
 		lastWindowState = {
 			width: 1366,
 			height: 768,
+			minWidth: 910,
+			minHeight: 110,
 			maximized: false,
 			frame: false
 		}
@@ -25,6 +27,8 @@ function createWindow () {
 		y: lastWindowState.y,
 		width: lastWindowState.width,
 		height: lastWindowState.height,
+		minWidth: 910,
+		minHeight: 110,
 		frame: false
 	});
 	
