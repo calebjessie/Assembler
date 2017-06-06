@@ -209,6 +209,12 @@ button#filter-btn:hover {
 	bottom: -40px;
 	font-size: 14px;
 }
+.asset-tag {
+	color: #929292;
+    position: absolute;
+    right: 10px;
+    bottom: -45px;
+}
 .open-btn {
 	display: none;
 	width: 60px;

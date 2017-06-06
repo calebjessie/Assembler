@@ -182,7 +182,7 @@ function process(image, count, aPath) {
 		uArray = uArray.filter(item => item.path != image[count].path);
 		
 		// Create html for images
-		genHtml(fileName, formattedPath, src, assetID);
+		genHtml(fileName, formattedPath, src, assetID, assetTags[0]);
 		
 		progressBar();
 		
@@ -199,28 +199,31 @@ function jsonDisplay() {
 		jsonFiles = JSON.parse(data);
 		
 		for (let i = 0; i < jsonFiles.length; i++) {
-			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id);
+			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
 		}
 	});
 }
 
 // Create HTML elements and display images
-function genHtml(fName, fPath, ogPath, id) {
+function genHtml(fName, fPath, ogPath, id, aTag) {
 	// Create html elements
 	let divImg = document.createElement('div'),
 		imageNode = document.createElement('div'),
 		imgName = document.createElement('p'),
+		assetTag = document.createElement('p'),
 		img = document.createElement('img'),
 		text = document.createTextNode(fName),
 		openBtn = document.createElement('div'),
 		openTxt = document.createElement('p'),
 		openTxtValue = document.createTextNode('open file location'),
-		openIcon = document.createElement('img');
+		openIcon = document.createElement('img'),
+		type = document.createTextNode('#' + aTag);
 
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
 	divImg.id = id;
 	//imgName.className = 'asset-title';
+	assetTag.className = 'asset-tag';
 	imageNode.className = 'image-node';
 	openBtn.className = 'open-btn';
 	openTxt.className = 'open-txt';
@@ -246,12 +249,14 @@ function genHtml(fName, fPath, ogPath, id) {
 	// Append elements to containers
 	docFrag.appendChild(divImg);
 	divImg.appendChild(imageNode);
-	divImg.appendChild(imgName);
+	//divImg.appendChild(imgName);
+	divImg.appendChild(assetTag);
 	imageNode.appendChild(openBtn);
 	imageNode.appendChild(img);
 	imageNode.appendChild(openTxt);
 	openTxt.appendChild(openTxtValue);
 	//imgName.appendChild(text);
+	assetTag.appendChild(type);
 	openBtn.appendChild(openIcon);
 	document.getElementById('asset-feed').appendChild(docFrag);
 }
@@ -308,7 +313,6 @@ function search() {
 
 function pFilterSearch(arr, searchString) {
 	return new Promise((resolve) => {
-		/*resolve(arr.filter(obj => Object.keys(obj).some(key => obj[key].includes(searchString))));*/
 		resolve(arr.filter(obj => obj.tags.some(tag => tag.includes(searchString))));
 	});
 }
