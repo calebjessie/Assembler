@@ -150,10 +150,19 @@ button#filter-btn {
 	background-color: #fff;
 	border-radius: 0 3px 3px 0;
 	height: 35px;
-	width: 100px;
+	width: 115px;
+	color: #0042ff;
 }
 button#filter-btn:hover {
 	background-color: #efefef;
+}
+.filter-icon {
+	display: inline-block;
+	width: 16.5px;
+	height: 9px;
+	background-image: url('../assets/filter-icon.png');
+	background-size: 16.5px 9px;
+	margin-right: 10px;
 }
 #filter-options {
 	-webkit-app-region: no-drag;
