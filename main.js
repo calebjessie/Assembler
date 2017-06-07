@@ -80,14 +80,37 @@ app.on('activate', () => {
 // Load Assets
 ipcMain.on('loadAssets', (event, args) => {
 	
-	var filePaths = dialog.showOpenDialog({
+	dialog.showOpenDialog({
 		properties: ['openDirectory']
+	}, (file) => {
+		if (file === undefined) return;
+		
+		for (var filePath of file) {;}
+		
+		walk(filePath, (err, allFiles) => {
+			if (err) console.log(err);
+
+			let filtered = allFiles.filter((files) => {
+				function testPath(s) {
+					let test = new RegExp('\\b__').test(s);
+					return !test;
+				}
+
+				return (files.fileType === '.jpg' && testPath(files.path));
+			});
+
+			fs.mkdir(path.join(app.getPath('userData'), '.thumbnails'), (err, callback) => {
+				if (err) console.log(err);
+			});
+
+			event.sender.send('getAssets', filtered, filePath);
+		});
 	});
 	
-	for (var filePath of filePaths) {;}
+	// for (var filePath of filePaths) {;}
 	
-	walk(filePath, (err, allFiles) => {
-		if (err) throw err;
+	/*walk(filePath, (err, allFiles) => {
+		if (err) console.log(err);
 		
 		let filtered = allFiles.filter((files) => {
 			function testPath(s) {
@@ -99,11 +122,11 @@ ipcMain.on('loadAssets', (event, args) => {
 		});
 		
 		fs.mkdir(path.join(app.getPath('userData'), '.thumbnails'), (err, callback) => {
-			if (err) return err;
+			if (err) console.log(err);
 		});
 		
 		event.sender.send('getAssets', filtered, filePath);
-	});
+	});*/
 });
 
 // Async walk version

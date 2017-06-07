@@ -177,17 +177,28 @@ button#filter-btn:hover {
 	z-index: 1;
 }
 #asset-feed {
-	clear: both;
-	padding: 25px;
-	height: 608px;
+	height: 100%;
 	text-align: center;
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: center;
+	align-items: center;
 }
 #browse {
 	display: none;
+	color: #000;
+	font-size: 1.5em;
+}
+button#browse-files {
+    background: #0042ff;
+    color: #fff;
+    font-size: 1em;
+    padding: 15px 30px;
+	margin-left: 40px;
+}
+button#browse-files:hover {
+	background: #1f59ff;
 }
 .asset-img {
     width: 350px;
@@ -217,9 +228,10 @@ button#filter-btn:hover {
 	position: absolute;
 	bottom: -40px;
 	font-size: 14px;
+	color: #515151;
 }
 .asset-tag {
-	color: #929292;
+	color: #c8c8c8;
     position: absolute;
     right: 10px;
     bottom: -45px;
@@ -272,7 +284,7 @@ div#progCont {
     top: 110px;
     position: fixed;
 	z-index: 10;
-	background: rgba(240, 240, 240, 0.9);
+	background: rgba(255, 255, 255, 1);
 }
 #progBar {
 	margin: 21px auto;

@@ -222,7 +222,7 @@ function genHtml(fName, fPath, ogPath, id, aTag) {
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
 	divImg.id = id;
-	//imgName.className = 'asset-title';
+	imgName.className = 'asset-title';
 	assetTag.className = 'asset-tag';
 	imageNode.className = 'image-node';
 	openBtn.className = 'open-btn';
@@ -249,13 +249,13 @@ function genHtml(fName, fPath, ogPath, id, aTag) {
 	// Append elements to containers
 	docFrag.appendChild(divImg);
 	divImg.appendChild(imageNode);
-	//divImg.appendChild(imgName);
+	divImg.appendChild(imgName);
 	divImg.appendChild(assetTag);
 	imageNode.appendChild(openBtn);
 	imageNode.appendChild(img);
 	imageNode.appendChild(openTxt);
 	openTxt.appendChild(openTxtValue);
-	//imgName.appendChild(text);
+	imgName.appendChild(text);
 	assetTag.appendChild(type);
 	openBtn.appendChild(openIcon);
 	document.getElementById('asset-feed').appendChild(docFrag);
@@ -347,8 +347,10 @@ function progressBar() {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
 	} else {
-		setTimeout(() => {document.getElementById('progCont').style.display = 'none';}, 1000);
-		document.getElementById('container').style.top = '110px';
+		setTimeout(() => {
+			document.getElementById('progCont').style.display = 'none';
+			document.getElementById('container').style.top = '110px';
+		}, 1000);
 	}
 	
 	document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
