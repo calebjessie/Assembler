@@ -32,6 +32,7 @@ header {
 	top: 0px;
 	z-index: 10;
 	display: flex;
+	user-select: none;
 }
 .branding, .search, .settings, .window-controls {
 	-webkit-app-region: no-drag;
@@ -226,7 +227,7 @@ button#browse-files:hover {
 .asset-title {
 	text-align: left;
 	position: absolute;
-	bottom: -40px;
+	bottom: -45px;
 	font-size: 14px;
 	color: #515151;
 }
