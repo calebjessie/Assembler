@@ -1,14 +1,21 @@
+@font-face {
+	font-family: 'Source Sans Pro';
+	src: url('../assets/SourceSansPro-Regular.otf');
+}
+html body {
+	font-family: 'Source Sans Pro', sans-serif;
+}
 body {
-	margin: 0;
 	background: #f3f3f3;
 	color: #fff;
-	font-family: Source Sans Pro, sans-serif;
 }
 h1, h2, h3, h4, h5, h6 {
 	margin: 0;
 }
-h1 {
-	padding-bottom: 10px;
+.branding h3 {
+	font-size: 30px;
+	display: inline-block;
+	font-family: 'Source Sans Pro', sans-serif;
 }
 button {
     background: none;
@@ -40,11 +47,23 @@ header {
 	cursor: default;
 }
 .branding {
-	margin-top: -5px;
-    margin-right: 20px;
+	margin: -5px 20px 0 20px;
+}
+#logo {
+	width: 43px;
+	height: 47px;
+	margin-top: -18px;
+	margin-right: 10px;
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+	#logo {
+		width: 86px;
+		height: 94px;
+	}
 }
 .search {
     margin-right: 15px;
+	margin-top: -5px;
 	flex-grow: 2;
 }
 div.mdl-textfield {
@@ -55,16 +74,22 @@ div.mdl-textfield {
 }
 input#searchBar.mdl-textfield__input {
 	background: #fff;
-	padding: 8px 10px;
+	padding: 10px 20px;
 	color: #000;
 	border-radius: 3px 0 0 3px;
+	font-size: 18px;
+}
+input#searchBar:focus, input#searchBar:focus div.filters {
+	box-shadow: 0 4px 10px rgba(0,0,0,0.25);
 }
 label.mdl-textfield__label {
-	top: 32px;
-	padding-left: 10px;
+	top: 35px;
+	padding-left: 20px;
+	width: 100%;
+	font-size: 18px;
 }
-.mdl-textfield__label {
-	width: 95%;
+label.mdl-textfield__label:after {
+	display: none;
 }
 
 /* Window Controls */
@@ -150,9 +175,12 @@ button#min-btn {
 button#filter-btn {
 	background-color: #fff;
 	border-radius: 0 3px 3px 0;
-	height: 35px;
+	height: 42px;
 	width: 115px;
 	color: #0042ff;
+	font-size: 18px;
+	text-transform: none;
+	font-family: 'Source Sans Pro', sans-serif;
 }
 button#filter-btn:hover {
 	background-color: #efefef;
@@ -284,7 +312,7 @@ div#progCont {
     width: 100%;
     top: 110px;
     position: fixed;
-	z-index: 10;
+	z-index: 9;
 	background: rgba(255, 255, 255, 1);
 }
 #progBar {
