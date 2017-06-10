@@ -47,7 +47,7 @@ header {
 	cursor: default;
 }
 .branding {
-	margin: -5px 20px 0 20px;
+	margin: -5px 20px 0 10px;
 }
 #logo {
 	width: 43px;
@@ -235,7 +235,7 @@ button#browse-files:hover {
     margin: 25px;
 	position: relative;
 	display: flex;
-	background-color: rgba(0, 0, 0, 0.2);
+	background-color: rgba(0, 0, 0, 0.04);
 }
 .asset-img:hover {
 	background-color: rgba(0, 0, 0, 0.85);

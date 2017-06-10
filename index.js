@@ -10,6 +10,7 @@ const {app} = require('electron').remote;
 const remote = require('electron').remote,
 	  fs = require('fs'),
 	  path = require('path'),
+	  chokidar = require('chokidar'),
 	  pImg = requireTaskPool(require.resolve('./scripts/imgProcess')),
 	  jFiles = path.join(app.getPath('userData'), 'files.json'),
 	  unFiles = path.join(app.getPath('userData'), 'unprocessed.json'),
@@ -59,12 +60,14 @@ let docFrag = document.createDocumentFragment(),
 		
 	}, false);
 		
-	// Fetch dir chosen by user
+	// Fetch dir chosen by user and watch it
 	if (fs.existsSync(dirFile)) {
 		fs.readFile(dirFile, (err, data) => {
 			if (err) throw err;
 
 			dir = JSON.parse(data);
+			
+			dirWatch(dir);
 		});
 	}
 	
@@ -354,4 +357,22 @@ function progressBar() {
 	}
 	
 	document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
+}
+
+// Watch directory for file changes
+function dirWatch(dir) {
+	// Initialize
+	let watcher = chokidar.watch(dir, {
+		ignored: /(^|[\/\\])\../,
+		persistent: true
+	});
+	
+	// Event listeners
+	watcher
+		.on('add', path => {
+			console.log('Added new: ' + path);
+		})
+		.on('error', error => {
+			console.log(error);
+		});
 }
