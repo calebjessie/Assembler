@@ -106,27 +106,6 @@ ipcMain.on('loadAssets', (event, args) => {
 			event.sender.send('getAssets', filtered, filePath);
 		});
 	});
-	
-	// for (var filePath of filePaths) {;}
-	
-	/*walk(filePath, (err, allFiles) => {
-		if (err) console.log(err);
-		
-		let filtered = allFiles.filter((files) => {
-			function testPath(s) {
-				let test = new RegExp('\\b__').test(s);
-				return !test;
-			}
-			
-			return (files.fileType === '.jpg' && testPath(files.path));
-		});
-		
-		fs.mkdir(path.join(app.getPath('userData'), '.thumbnails'), (err, callback) => {
-			if (err) console.log(err);
-		});
-		
-		event.sender.send('getAssets', filtered, filePath);
-	});*/
 });
 
 // Async walk version

@@ -66,8 +66,7 @@ let docFrag = document.createDocumentFragment(),
 			if (err) throw err;
 
 			dir = JSON.parse(data);
-			
-			dirWatch(dir);
+			watchFiles(dir);
 		});
 	}
 	
@@ -359,20 +358,32 @@ function progressBar() {
 	document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
 }
 
-// Watch directory for file changes
-function dirWatch(dir) {
-	// Initialize
+// File Watcher
+function watchFiles(dir) {
+	// Matcher function to ignore files - Will impliment later.
+/*	let match = [
+		/(^|[\/\\])\../,
+		(string) => {
+			let ext = string.split('.').pop();
+			return ext !== '.jpg'
+		}
+	];*/
+	
+	// Initialize file watcher
 	let watcher = chokidar.watch(dir, {
 		ignored: /(^|[\/\\])\../,
 		persistent: true
 	});
-	
-	// Event listeners
+
+	// Watch event listeners
 	watcher
 		.on('add', path => {
 			console.log('Added new: ' + path);
 		})
 		.on('error', error => {
 			console.log(error);
+		})
+		.on('unlink', path => {
+			console.log(path + "has been removed");
 		});
 }
