@@ -14,7 +14,8 @@ const remote = require('electron').remote,
 	  pImg = requireTaskPool(require.resolve('./scripts/imgProcess')),
 	  jFiles = path.join(app.getPath('userData'), 'files.json'),
 	  unFiles = path.join(app.getPath('userData'), 'unprocessed.json'),
-	  dirFile = path.join(app.getPath('userData'), 'dir.json');
+	  dirFile = path.join(app.getPath('userData'), 'dir.json'),
+	  watcherFile = path.join(app.getPath('userData'), 'watched.json');
 
 let docFrag = document.createDocumentFragment(),
 	pFiles = [],
@@ -22,7 +23,8 @@ let docFrag = document.createDocumentFragment(),
 	jsonFiles = [],
 	progTotal = 0,
 	progAmt = 0,
-	dir;
+	dir,
+	watcher;
 
 // Create window controls and browse functionality
 (function() {
@@ -39,6 +41,17 @@ let docFrag = document.createDocumentFragment(),
 	}, false);
 
 	document.getElementById('close-btn').addEventListener('click', () => {
+		
+		// Save json of all files being watched at app quit
+/*		if (watcher !== null) {
+			let watched = watcher.getWatched();
+			
+			let w = JSON.stringify(watched, null, '\t');
+				
+			fs.writeFile(path.join(app.getPath('userData'), 'watched.json'), w, (err) => {
+				if (err) console.log(err);
+			});
+		}*/
 
 		// Add processed images to files.json if app quit before finishing
 		if (pFiles.length > 0) {
@@ -66,7 +79,19 @@ let docFrag = document.createDocumentFragment(),
 			if (err) throw err;
 
 			dir = JSON.parse(data);
-			watchFiles(dir);
+			
+			if (fs.existsSync(watcherFile)) {
+				fs.readFile(watcherFile, (err, data) => {
+					if (err) console.log(err);
+					
+					let wFiles = JSON.parse(data);
+					watchFiles();
+					watcher.add(wFiles);
+				});
+			} else {
+				watchFiles();
+				watcher.add(dir[0] + "\**\\*.jpg");
+			}
 		});
 	}
 	
@@ -359,7 +384,7 @@ function progressBar() {
 }
 
 // File Watcher
-function watchFiles(dir) {
+function watchFiles() {
 	// Matcher function to ignore files - Will impliment later.
 /*	let match = [
 		/(^|[\/\\])\../,
@@ -370,7 +395,7 @@ function watchFiles(dir) {
 	];*/
 	
 	// Initialize file watcher
-	let watcher = chokidar.watch(dir, {
+	watcher = chokidar.watch('', {
 		ignored: /(^|[\/\\])\../,
 		persistent: true
 	});
@@ -384,6 +409,6 @@ function watchFiles(dir) {
 			console.log(error);
 		})
 		.on('unlink', path => {
-			console.log(path + "has been removed");
+			console.log(path + " has been removed");
 		});
 }
