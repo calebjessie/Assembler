@@ -15,8 +15,9 @@
     "electron-rebuild": "^1.5.7"
   },
   "dependencies": {
+    "chokidar": "^1.7.0",
     "electron-remote": "^1.1.2",
-    "sharp": "^0.17.2",
-	"chokidar": "^1.7.0"
+    "lowdb": "^0.16.2",
+    "sharp": "^0.17.2"
   }
 }

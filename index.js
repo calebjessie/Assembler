@@ -21,10 +21,14 @@ let docFrag = document.createDocumentFragment(),
 	pFiles = [],
 	uArray = [],
 	jsonFiles = [],
+	watched = [],
 	progTotal = 0,
 	progAmt = 0,
 	dir,
 	watcher;
+
+// Create database for all assets
+const db = low('db.json');
 
 // Create window controls and browse functionality
 (function() {
@@ -44,8 +48,6 @@ let docFrag = document.createDocumentFragment(),
 		
 		// Save json of all files being watched at app quit
 /*		if (watcher !== null) {
-			let watched = watcher.getWatched();
-			
 			let w = JSON.stringify(watched, null, '\t');
 				
 			fs.writeFile(path.join(app.getPath('userData'), 'watched.json'), w, (err) => {
@@ -80,7 +82,7 @@ let docFrag = document.createDocumentFragment(),
 
 			dir = JSON.parse(data);
 			
-			if (fs.existsSync(watcherFile)) {
+			/*if (fs.existsSync(watcherFile)) {
 				fs.readFile(watcherFile, (err, data) => {
 					if (err) console.log(err);
 					
@@ -91,7 +93,7 @@ let docFrag = document.createDocumentFragment(),
 			} else {
 				watchFiles();
 				watcher.add(dir[0] + "\**\\*.jpg");
-			}
+			}*/
 		});
 	}
 	
@@ -404,6 +406,7 @@ function watchFiles() {
 	watcher
 		.on('add', path => {
 			console.log('Added new: ' + path);
+			watched.push(path);
 		})
 		.on('error', error => {
 			console.log(error);
