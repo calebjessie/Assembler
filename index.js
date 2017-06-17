@@ -27,9 +27,6 @@ let docFrag = document.createDocumentFragment(),
 	dir,
 	watcher;
 
-// Create database for all assets
-const db = low('db.json');
-
 // Create window controls and browse functionality
 (function() {
 	document.getElementById('min-btn').addEventListener('click', () => {
