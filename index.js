@@ -11,6 +11,7 @@ const remote = require('electron').remote,
 	  fs = require('fs'),
 	  path = require('path'),
 	  chokidar = require('chokidar'),
+	  low = require('lowdb'),
 	  pImg = requireTaskPool(require.resolve('./scripts/imgProcess')),
 	  jFiles = path.join(app.getPath('userData'), 'files.json'),
 	  unFiles = path.join(app.getPath('userData'), 'unprocessed.json'),
@@ -26,6 +27,10 @@ let docFrag = document.createDocumentFragment(),
 	progAmt = 0,
 	dir,
 	watcher;
+
+const db = low('db.json'); // Create database in memory
+db.defaults({ assets: [] }) // Write defaults if empty
+	.write();
 
 // Create window controls and browse functionality
 (function() {
@@ -166,6 +171,7 @@ function initAssets(array, aPath) {
 
 		// If at end of array, save json. Prevent overwritting. Use addFiles()
 		if (i === 0) {
+			
 			if (fs.existsSync(jFiles)) {
 				fs.readFile(jFiles, (err, data) => {
 					if (err) throw err;
@@ -198,6 +204,11 @@ function process(image, count, aPath) {
 	pImg.processImage(src, count).then((path) => {
 		let formattedPath = path.replace(/\\/g,"/"),
 			assetID = count.toString();
+		
+		// Add asset to db
+		db.get('assets')
+			.push({ id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags })
+			.write();
 		
 		// Push file info to array
 		pFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
