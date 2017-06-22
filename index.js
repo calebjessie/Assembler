@@ -47,23 +47,13 @@ db.defaults({ assets: [] }) // Write defaults if empty
 	}, false);
 
 	document.getElementById('close-btn').addEventListener('click', () => {
-		
-		// Save json of all files being watched at app quit
-/*		if (watcher !== null) {
-			let w = JSON.stringify(watched, null, '\t');
-				
-			fs.writeFile(path.join(app.getPath('userData'), 'watched.json'), w, (err) => {
-				if (err) console.log(err);
-			});
-		}*/
-
 		// Add processed images to files.json if app quit before finishing
 		if (pFiles.length > 0) {
 			addFiles(pFiles);
 		} else {
 			app.quit();
 		}
-		
+
 		// All images processed? Remove file. If not, save list.
 		if (uArray.length === 0) {
 			fs.unlink(unFiles, (err) => {
@@ -74,54 +64,41 @@ db.defaults({ assets: [] }) // Write defaults if empty
 				if (err) console.log(err);
 			});
 		}
-		
+
 	}, false);
-		
+
 	// Fetch dir chosen by user and watch it
 	if (fs.existsSync(dirFile)) {
 		fs.readFile(dirFile, (err, data) => {
 			if (err) throw err;
 
 			dir = JSON.parse(data);
-			
-			/*if (fs.existsSync(watcherFile)) {
-				fs.readFile(watcherFile, (err, data) => {
-					if (err) console.log(err);
-					
-					let wFiles = JSON.parse(data);
-					watchFiles();
-					watcher.add(wFiles);
-				});
-			} else {
-				watchFiles();
-				watcher.add(dir[0] + "\**\\*.jpg");
-			}*/
 		});
 	}
-	
+
 	// If files have been processed, display them
 	if (fs.existsSync(jFiles)) {
 		jsonDisplay();
 	} else {
 		document.getElementById('browse').style.display = 'block';
 	}
-	
+
 	// If unprocessed images, continue processing them
 	if (fs.existsSync(unFiles)) {
 		fs.readFile(unFiles, (err, data) => {
 			if (err) throw err;
-			
+
 			const unprocessedJson = JSON.parse(data);
 			uArray = unprocessedJson;
 			initAssets(unprocessedJson, dir[0]);
 		});
 	}
-	
+
 	// Send message to main process to load files
 	document.getElementById('browse-files').addEventListener('click', () => {
 		ipcRenderer.send('loadAssets');
 	});
-	
+
 	// Add event listener for filter options
 	document.getElementById('ftr-clear').addEventListener('click', () => {
 		showEl();
@@ -141,22 +118,22 @@ db.defaults({ assets: [] }) // Write defaults if empty
 	document.getElementById('ftr-ui-elements').addEventListener('click', () => {
 		filters("kits");
 	});
-	
+
 	// Initially hide progress bar
 	document.getElementById('progCont').style.display = 'none';
-	
+
 	search();
 })();
 
 // Displays assets once browse btn is clicked
-ipcRenderer.on('getAssets', (event, filtered, filePath) => {	
+ipcRenderer.on('getAssets', (event, filtered, filePath) => {
 	document.getElementById('browse').style.display = 'none';
 	let jsonFilePath = [filePath.replace(/\\/g,"\\") + "\\"];
-	
+
 	fs.writeFile(path.join(app.getPath('userData'), 'dir.json'), JSON.stringify(jsonFilePath, null, '\t'), (err) => {
 		if (err) console.log(err);
 	});
-	
+
 	let aPath = filePath + "\\";
 	uArray = filtered;
 	initAssets(filtered, aPath);
@@ -165,13 +142,13 @@ ipcRenderer.on('getAssets', (event, filtered, filePath) => {
 // Process and append each asset
 function initAssets(array, aPath) {
 	progTotal = array.length;
-	
+
 	for (let i = array.length; i-- > 0;) {
 		process(array, i, aPath);
 
 		// If at end of array, save json. Prevent overwritting. Use addFiles()
 		if (i === 0) {
-			
+
 			if (fs.existsSync(jFiles)) {
 				fs.readFile(jFiles, (err, data) => {
 					if (err) throw err;
@@ -199,30 +176,30 @@ function process(image, count, aPath) {
 		fileName = path.basename(image[count].path).replace(/\.[^.]+$/g,""),
 		tagPath = image[count].path.replace(aPath, ""), // Remove dir from path
 		assetTags = tagPath.toLowerCase().replace(/\W|_/g," ").split(" "); // Create array of tags
-	
+
 	// Process image
 	pImg.processImage(src, count).then((path) => {
 		let formattedPath = path.replace(/\\/g,"/"),
 			assetID = count.toString();
-		
+
 		// Add asset to db
 		db.get('assets')
 			.push({ id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags })
 			.write();
-		
+
 		// Push file info to array
 		pFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
-		
+
 		jsonFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
-		
+
 		// Filter out processed image from array
 		uArray = uArray.filter(item => item.path != image[count].path);
-		
+
 		// Create html for images
 		genHtml(fileName, formattedPath, src, assetID, assetTags[0]);
-		
+
 		progressBar();
-		
+
 		// Iterate progress
 		progAmt++;
 	});
@@ -232,9 +209,9 @@ function process(image, count, aPath) {
 function jsonDisplay() {
 	fs.readFile(jFiles, (err, data) => {
 		if (err) throw err;
-		
+
 		jsonFiles = JSON.parse(data);
-		
+
 		for (let i = 0; i < jsonFiles.length; i++) {
 			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
 		}
@@ -267,7 +244,7 @@ function genHtml(fName, fPath, ogPath, id, aTag) {
 	openIcon.classList = 'open-icon';
 	openIcon.src = './assets/open-icon.png';
 	img.src = fPath;
-	
+
 	// Add hover events
 	imageNode.addEventListener('mouseover', () => {
 		openBtn.style.display = 'block';
@@ -277,7 +254,7 @@ function genHtml(fName, fPath, ogPath, id, aTag) {
 		openBtn.style.display = 'none';
 		openTxt.style.display = 'none';
 	}, false);
-	
+
 	// Add click events
 	imageNode.addEventListener('click', () => {
 		shell.showItemInFolder(ogPath);
@@ -309,14 +286,14 @@ function addFiles(array) {
 
 			fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
 				if (err) throw err;
-				
+
 				app.quit();
 			});
 		});
 	} else {
 		fs.writeFile(jFiles, JSON.stringify(array, null, '\t'), (err) => {
 			if (err) throw err;
-			
+
 			app.quit();
 		});
 	}
@@ -325,7 +302,7 @@ function addFiles(array) {
 // Search assets
 function search() {
 	let elements = document.getElementsByClassName('asset-img');
-	
+
 	document.getElementById('searchBar').addEventListener('keyup', () => {
 		let searchVal = document.getElementById('searchBar').value;
 
@@ -338,7 +315,7 @@ function search() {
 				elements[i].style.display = 'flex';
 			}
 		}
-		
+
 		pFilterSearch(jsonFiles, searchVal.toLowerCase()).then((results) => {
 			for (let i = 0; i < results.length; i++) {
 				console.log(results[i]);
@@ -356,11 +333,11 @@ function pFilterSearch(arr, searchString) {
 
 function filters(option) {
 	let elements = document.getElementsByClassName('asset-img');
-	
+
 	for (let i = 0; i < elements.length; i++) {
 		elements[i].style.display = 'none';
 	}
-	
+
 	pFilterSearch(jsonFiles, option).then((results) => {
 		for (let i = 0; i < results.length; i++) {
 			document.getElementById(results[i].id).style.display = "flex";
@@ -370,7 +347,7 @@ function filters(option) {
 
 function showEl() {
 	let elements = document.getElementsByClassName('asset-img');
-	
+
 	for (let i = 0; i < elements.length; i++) {
 		elements[i].style.display = 'flex';
 	}
@@ -379,7 +356,7 @@ function showEl() {
 // Show and update progress bar
 function progressBar() {
 	let progUp = (progAmt / progTotal) * 100;
-		
+
 	if (progUp.toFixed() != 100) {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
@@ -389,37 +366,6 @@ function progressBar() {
 			document.getElementById('container').style.top = '110px';
 		}, 1000);
 	}
-	
+
 	document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
-}
-
-// File Watcher
-function watchFiles() {
-	// Matcher function to ignore files - Will impliment later.
-/*	let match = [
-		/(^|[\/\\])\../,
-		(string) => {
-			let ext = string.split('.').pop();
-			return ext !== '.jpg'
-		}
-	];*/
-	
-	// Initialize file watcher
-	watcher = chokidar.watch('', {
-		ignored: /(^|[\/\\])\../,
-		persistent: true
-	});
-
-	// Watch event listeners
-	watcher
-		.on('add', path => {
-			console.log('Added new: ' + path);
-			watched.push(path);
-		})
-		.on('error', error => {
-			console.log(error);
-		})
-		.on('unlink', path => {
-			console.log(path + " has been removed");
-		});
 }
