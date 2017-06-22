@@ -2,10 +2,10 @@
 
 require("babel-core").transform("code");
 
-const {ipcRenderer} = require('electron');
-const {shell} = require('electron');
-const {requireTaskPool} = require('electron-remote');
-const {app} = require('electron').remote;
+const {ipcRenderer} = require('electron'),
+	  {shell} = require('electron'),
+	  {requireTaskPool} = require('electron-remote'),
+	  {app} = require('electron').remote;
 
 const remote = require('electron').remote,
 	  fs = require('fs'),
