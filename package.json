@@ -1,8 +1,8 @@
 {
   "name": "Asset-Manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "main.js",
-  "description": "An design asset manager",
+  "description": "A visual design asset manager",
   "scripts": {
     "start": "electron ."
   },
@@ -15,9 +15,12 @@
     "electron-rebuild": "^1.5.7"
   },
   "dependencies": {
+    "babel-polyfill": "^6.23.0",
     "chokidar": "^1.7.0",
     "electron-remote": "^1.1.2",
     "lowdb": "^0.16.2",
+    "rxdb": "^5.0.0",
+    "rxjs": "^5.4.1",
     "sharp": "^0.17.2"
   }
 }

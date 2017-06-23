@@ -1,6 +1,7 @@
 'use strict'
 
-require("babel-core").transform("code");
+require('babel-core').transform('code');
+require('babel-polyfill');
 
 const {ipcRenderer} = require('electron'),
 	  {shell} = require('electron'),
@@ -10,9 +11,9 @@ const {ipcRenderer} = require('electron'),
 const remote = require('electron').remote,
 	  fs = require('fs'),
 	  path = require('path'),
+		rxdb = require('rxdb'),
 	  chokidar = require('chokidar'),
-	  low = require('lowdb'),
-	  pImg = requireTaskPool(require.resolve('./scripts/imgProcess')),
+	  pImg = requireTaskPool(require.resolve('./public/js/imgProcess')),
 	  jFiles = path.join(app.getPath('userData'), 'files.json'),
 	  unFiles = path.join(app.getPath('userData'), 'unprocessed.json'),
 	  dirFile = path.join(app.getPath('userData'), 'dir.json'),
@@ -28,9 +29,9 @@ let docFrag = document.createDocumentFragment(),
 	dir,
 	watcher;
 
-const db = low('db.json'); // Create database in memory
-db.defaults({ assets: [] }) // Write defaults if empty
-	.write();
+// const db = low('db.json'); // Create database in memory
+// db.defaults({ assets: [] }) // Write defaults if empty
+//	.write();
 
 // Create window controls and browse functionality
 (function() {
@@ -183,9 +184,9 @@ function process(image, count, aPath) {
 			assetID = count.toString();
 
 		// Add asset to db
-		db.get('assets')
-			.push({ id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags })
-			.write();
+		// db.get('assets')
+		// 	.push({ id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags })
+		// 	.write();
 
 		// Push file info to array
 		pFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
@@ -242,7 +243,7 @@ function genHtml(fName, fPath, ogPath, id, aTag) {
 	openBtn.className = 'open-btn';
 	openTxt.className = 'open-txt';
 	openIcon.classList = 'open-icon';
-	openIcon.src = './assets/open-icon.png';
+	openIcon.src = './public/img/open-icon.png';
 	img.src = fPath;
 
 	// Add hover events
