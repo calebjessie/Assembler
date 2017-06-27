@@ -1,49 +1,55 @@
-'use strict'
+'use strict';
 
 require('babel-core').transform('code');
 require('babel-polyfill');
 
 // Database requires
-const RxDB = require('rxdb');
+var RxDB = require('rxdb');
 RxDB.plugin(require('pouchdb-adapter-websql'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-replication'));
 
 // Electron requires
-const {ipcRenderer} = require('electron'),
-	  {shell} = require('electron'),
-	  {requireTaskPool} = require('electron-remote'),
-	  {app} = require('electron').remote;
+
+var _require = require('electron'),
+    ipcRenderer = _require.ipcRenderer,
+    _require2 = require('electron'),
+    shell = _require2.shell,
+    _require3 = require('electron-remote'),
+    requireTaskPool = _require3.requireTaskPool,
+    app = require('electron').remote.app;
 
 // Module requires
-const remote = require('electron').remote,
-	  fs = require('fs'),
-	  path = require('path'),
-	  chokidar = require('chokidar'),
-	  pImg = requireTaskPool(require.resolve('./public/js/imgProcess'));
+
+
+var remote = require('electron').remote,
+    fs = require('fs'),
+    path = require('path'),
+    chokidar = require('chokidar'),
+    pImg = requireTaskPool(require.resolve('./public/js/imgProcess'));
 
 // Path variables
-const jFiles = path.join(app.getPath('userData'), 'files.json'),
-		unFiles = path.join(app.getPath('userData'), 'unprocessed.json'),
-	  dirFile = path.join(app.getPath('userData'), 'dir.json'),
-	  watcherFile = path.join(app.getPath('userData'), 'watched.json');
+var jFiles = path.join(app.getPath('userData'), 'files.json'),
+    unFiles = path.join(app.getPath('userData'), 'unprocessed.json'),
+    dirFile = path.join(app.getPath('userData'), 'dir.json'),
+    watcherFile = path.join(app.getPath('userData'), 'watched.json');
 
 // Global variables
-let docFrag = document.createDocumentFragment(),
-	pFiles = [],
-	uArray = [],
-	jsonFiles = [],
-	watched = [],
-	progTotal = 0,
-	progAmt = 0,
-	dir,
-	watcher;
+var docFrag = document.createDocumentFragment(),
+    pFiles = [],
+    uArray = [],
+    jsonFiles = [],
+    watched = [],
+    progTotal = 0,
+    progAmt = 0,
+    dir = void 0,
+    watcher = void 0;
 
 // Initialize database
-const assetList = document.querySelector('#asset-feed');
+var assetList = document.querySelector('#asset-feed');
 
 // Create JSON Schema
-const assetSchema = {
+var assetSchema = {
 	title: 'asset schema',
 	description: 'describes an asset',
 	version: 0,
@@ -73,16 +79,16 @@ const assetSchema = {
 
 // Generate syncURL for db
 console.log('hostname: ' + window.location.hostname);
-const syncURL = 'http://' + window.location.hostname + ':10102/';
+var syncURL = 'http://' + window.location.hostname + ':10102/';
 console.log(syncURL);
 
 // Window controls and browse functionality
-(function() {
-	document.getElementById('min-btn').addEventListener('click', () => {
+(function () {
+	document.getElementById('min-btn').addEventListener('click', function () {
 		remote.getCurrentWindow().minimize();
 	}, false);
 
-	document.getElementById('max-btn').addEventListener('click', () => {
+	document.getElementById('max-btn').addEventListener('click', function () {
 		if (!remote.getCurrentWindow().isMaximized()) {
 			remote.getCurrentWindow().maximize();
 		} else {
@@ -90,7 +96,7 @@ console.log(syncURL);
 		}
 	}, false);
 
-	document.getElementById('close-btn').addEventListener('click', () => {
+	document.getElementById('close-btn').addEventListener('click', function () {
 		// Add processed images to files.json if app quit before finishing
 		if (pFiles.length > 0) {
 			addFiles(pFiles);
@@ -100,20 +106,19 @@ console.log(syncURL);
 
 		// All images processed? Remove file. If not, save list.
 		if (uArray.length === 0) {
-			fs.unlink(unFiles, (err) => {
+			fs.unlink(unFiles, function (err) {
 				if (err) throw err;
 			});
 		} else {
-			fs.writeFile(unFiles, JSON.stringify(uArray, null, '\t'), (err) => {
+			fs.writeFile(unFiles, JSON.stringify(uArray, null, '\t'), function (err) {
 				if (err) console.log(err);
 			});
 		}
-
 	}, false);
 
 	// Fetch dir chosen by user and watch it
 	if (fs.existsSync(dirFile)) {
-		fs.readFile(dirFile, (err, data) => {
+		fs.readFile(dirFile, function (err, data) {
 			if (err) throw err;
 
 			dir = JSON.parse(data);
@@ -129,37 +134,37 @@ console.log(syncURL);
 
 	// If unprocessed images, continue processing them
 	if (fs.existsSync(unFiles)) {
-		fs.readFile(unFiles, (err, data) => {
+		fs.readFile(unFiles, function (err, data) {
 			if (err) throw err;
 
-			const unprocessedJson = JSON.parse(data);
+			var unprocessedJson = JSON.parse(data);
 			uArray = unprocessedJson;
 			initAssets(unprocessedJson, dir[0]);
 		});
 	}
 
 	// Send message to main process to load files
-	document.getElementById('browse-files').addEventListener('click', () => {
+	document.getElementById('browse-files').addEventListener('click', function () {
 		ipcRenderer.send('loadAssets');
 	});
 
 	// Add event listener for filter options
-	document.getElementById('ftr-clear').addEventListener('click', () => {
+	document.getElementById('ftr-clear').addEventListener('click', function () {
 		showEl();
 	});
-	document.getElementById('ftr-stock-photos').addEventListener('click', () => {
+	document.getElementById('ftr-stock-photos').addEventListener('click', function () {
 		filters("stock");
 	});
-	document.getElementById('ftr-icons').addEventListener('click', () => {
+	document.getElementById('ftr-icons').addEventListener('click', function () {
 		filters("icons");
 	});
-	document.getElementById('ftr-fonts').addEventListener('click', () => {
+	document.getElementById('ftr-fonts').addEventListener('click', function () {
 		filters("fonts");
 	});
-	document.getElementById('ftr-mockups').addEventListener('click', () => {
+	document.getElementById('ftr-mockups').addEventListener('click', function () {
 		filters("mockups");
 	});
-	document.getElementById('ftr-ui-elements').addEventListener('click', () => {
+	document.getElementById('ftr-ui-elements').addEventListener('click', function () {
 		filters("kits");
 	});
 
@@ -170,15 +175,15 @@ console.log(syncURL);
 })();
 
 // Displays assets once browse btn is clicked
-ipcRenderer.on('getAssets', (event, filtered, filePath) => {
+ipcRenderer.on('getAssets', function (event, filtered, filePath) {
 	document.getElementById('browse').style.display = 'none';
-	let jsonFilePath = [filePath.replace(/\\/g,"\\") + "\\"];
+	var jsonFilePath = [filePath.replace(/\\/g, "\\") + "\\"];
 
-	fs.writeFile(path.join(app.getPath('userData'), 'dir.json'), JSON.stringify(jsonFilePath, null, '\t'), (err) => {
+	fs.writeFile(path.join(app.getPath('userData'), 'dir.json'), JSON.stringify(jsonFilePath, null, '\t'), function (err) {
 		if (err) console.log(err);
 	});
 
-	let aPath = filePath + "\\";
+	var aPath = filePath + "\\";
 	uArray = filtered;
 	initAssets(filtered, aPath);
 });
@@ -187,25 +192,25 @@ ipcRenderer.on('getAssets', (event, filtered, filePath) => {
 function initAssets(array, aPath) {
 	progTotal = array.length;
 
-	for (let i = array.length; i-- > 0;) {
+	for (var i = array.length; i-- > 0;) {
 		process(array, i, aPath);
 
 		// If at end of array, save json. Prevent overwritting. Use addFiles()
 		if (i === 0) {
 
 			if (fs.existsSync(jFiles)) {
-				fs.readFile(jFiles, (err, data) => {
+				fs.readFile(jFiles, function (err, data) {
 					if (err) throw err;
 
-					const jsonFiles = JSON.parse(data),
-						  newFiles = jsonFiles.concat(pFiles);
+					var jsonFiles = JSON.parse(data),
+					    newFiles = jsonFiles.concat(pFiles);
 
-					fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
+					fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), function (err) {
 						if (err) throw err;
 					});
 				});
 			} else {
-				fs.writeFile(jFiles, JSON.stringify(pFiles), (err) => {
+				fs.writeFile(jFiles, JSON.stringify(pFiles), function (err) {
 					if (err) console.log(err);
 				});
 			}
@@ -216,15 +221,16 @@ function initAssets(array, aPath) {
 // Process Images
 function process(image, count, aPath) {
 	// Format path strings
-	let src = image[count].path.replace(/\\/g,"/"),
-		fileName = path.basename(image[count].path).replace(/\.[^.]+$/g,""),
-		tagPath = image[count].path.replace(aPath, ""), // Remove dir from path
-		assetTags = tagPath.toLowerCase().replace(/\W|_/g," ").split(" "); // Create array of tags
+	var src = image[count].path.replace(/\\/g, "/"),
+	    fileName = path.basename(image[count].path).replace(/\.[^.]+$/g, ""),
+	    tagPath = image[count].path.replace(aPath, ""),
+	    // Remove dir from path
+	assetTags = tagPath.toLowerCase().replace(/\W|_/g, " ").split(" "); // Create array of tags
 
 	// Process image
-	pImg.processImage(src, count).then((path) => {
-		let formattedPath = path.replace(/\\/g,"/"),
-			assetID = count.toString();
+	pImg.processImage(src, count).then(function (path) {
+		var formattedPath = path.replace(/\\/g, "/"),
+		    assetID = count.toString();
 
 		// Add asset to db
 		// db.get('assets')
@@ -232,12 +238,14 @@ function process(image, count, aPath) {
 		// 	.write();
 
 		// Push file info to array
-		pFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
+		pFiles.push({ id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags });
 
-		jsonFiles.push({id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags});
+		jsonFiles.push({ id: assetID, file: formattedPath, name: fileName, og: src, tags: assetTags });
 
 		// Filter out processed image from array
-		uArray = uArray.filter(item => item.path != image[count].path);
+		uArray = uArray.filter(function (item) {
+			return item.path != image[count].path;
+		});
 
 		// Create html for images
 		genHtml(fileName, formattedPath, src, assetID, assetTags[0]);
@@ -251,12 +259,12 @@ function process(image, count, aPath) {
 
 // Displays processed files
 function jsonDisplay() {
-	fs.readFile(jFiles, (err, data) => {
+	fs.readFile(jFiles, function (err, data) {
 		if (err) throw err;
 
 		jsonFiles = JSON.parse(data);
 
-		for (let i = 0; i < jsonFiles.length; i++) {
+		for (var i = 0; i < jsonFiles.length; i++) {
 			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
 		}
 	});
@@ -265,17 +273,17 @@ function jsonDisplay() {
 // Create HTML elements and display images
 function genHtml(fName, fPath, ogPath, id, aTag) {
 	// Create html elements
-	let divImg = document.createElement('div'),
-		imageNode = document.createElement('div'),
-		imgName = document.createElement('p'),
-		assetTag = document.createElement('p'),
-		img = document.createElement('img'),
-		text = document.createTextNode(fName),
-		openBtn = document.createElement('div'),
-		openTxt = document.createElement('p'),
-		openTxtValue = document.createTextNode('open file location'),
-		openIcon = document.createElement('img'),
-		type = document.createTextNode('#' + aTag);
+	var divImg = document.createElement('div'),
+	    imageNode = document.createElement('div'),
+	    imgName = document.createElement('p'),
+	    assetTag = document.createElement('p'),
+	    img = document.createElement('img'),
+	    text = document.createTextNode(fName),
+	    openBtn = document.createElement('div'),
+	    openTxt = document.createElement('p'),
+	    openTxtValue = document.createTextNode('open file location'),
+	    openIcon = document.createElement('img'),
+	    type = document.createTextNode('#' + aTag);
 
 	// Create styles and add file path to div
 	divImg.className = 'asset-img';
@@ -290,17 +298,17 @@ function genHtml(fName, fPath, ogPath, id, aTag) {
 	img.src = fPath;
 
 	// Add hover events
-	imageNode.addEventListener('mouseover', () => {
+	imageNode.addEventListener('mouseover', function () {
 		openBtn.style.display = 'block';
 		openTxt.style.display = 'block';
 	}, false);
-	imageNode.addEventListener('mouseout', () => {
+	imageNode.addEventListener('mouseout', function () {
 		openBtn.style.display = 'none';
 		openTxt.style.display = 'none';
 	}, false);
 
 	// Add click events
-	imageNode.addEventListener('click', () => {
+	imageNode.addEventListener('click', function () {
 		shell.showItemInFolder(ogPath);
 	}, false);
 
@@ -322,20 +330,20 @@ function genHtml(fName, fPath, ogPath, id, aTag) {
 // Adds newly processed files to json file - Can use in initAssets()
 function addFiles(array) {
 	if (fs.existsSync(jFiles)) {
-		fs.readFile(jFiles, (err, data) => {
+		fs.readFile(jFiles, function (err, data) {
 			if (err) throw err;
 
-			const j = JSON.parse(data),
-				  newFiles = j.concat(array);
+			var j = JSON.parse(data),
+			    newFiles = j.concat(array);
 
-			fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
+			fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), function (err) {
 				if (err) throw err;
 
 				app.quit();
 			});
 		});
 	} else {
-		fs.writeFile(jFiles, JSON.stringify(array, null, '\t'), (err) => {
+		fs.writeFile(jFiles, JSON.stringify(array, null, '\t'), function (err) {
 			if (err) throw err;
 
 			app.quit();
@@ -345,67 +353,71 @@ function addFiles(array) {
 
 // Search assets
 function search() {
-	let elements = document.getElementsByClassName('asset-img');
+	var elements = document.getElementsByClassName('asset-img');
 
-	document.getElementById('searchBar').addEventListener('keyup', () => {
-		let searchVal = document.getElementById('searchBar').value;
+	document.getElementById('searchBar').addEventListener('keyup', function () {
+		var searchVal = document.getElementById('searchBar').value;
 
 		if (searchVal !== '') {
-			for (let i = 0; i < elements.length; i++) {
+			for (var i = 0; i < elements.length; i++) {
 				elements[i].style.display = 'none';
 			}
 		} else {
-			for (let i = 0; i < elements.length; i++) {
-				elements[i].style.display = 'flex';
+			for (var _i = 0; _i < elements.length; _i++) {
+				elements[_i].style.display = 'flex';
 			}
 		}
 
-		pFilterSearch(jsonFiles, searchVal.toLowerCase()).then((results) => {
-			for (let i = 0; i < results.length; i++) {
-				console.log(results[i]);
-				document.getElementById(results[i].id).style.display = "flex";
+		pFilterSearch(jsonFiles, searchVal.toLowerCase()).then(function (results) {
+			for (var _i2 = 0; _i2 < results.length; _i2++) {
+				console.log(results[_i2]);
+				document.getElementById(results[_i2].id).style.display = "flex";
 			}
 		});
 	});
 }
 
 function pFilterSearch(arr, searchString) {
-	return new Promise((resolve) => {
-		resolve(arr.filter(obj => obj.tags.some(tag => tag.includes(searchString))));
+	return new Promise(function (resolve) {
+		resolve(arr.filter(function (obj) {
+			return obj.tags.some(function (tag) {
+				return tag.includes(searchString);
+			});
+		}));
 	});
 }
 
 function filters(option) {
-	let elements = document.getElementsByClassName('asset-img');
+	var elements = document.getElementsByClassName('asset-img');
 
-	for (let i = 0; i < elements.length; i++) {
+	for (var i = 0; i < elements.length; i++) {
 		elements[i].style.display = 'none';
 	}
 
-	pFilterSearch(jsonFiles, option).then((results) => {
-		for (let i = 0; i < results.length; i++) {
-			document.getElementById(results[i].id).style.display = "flex";
+	pFilterSearch(jsonFiles, option).then(function (results) {
+		for (var _i3 = 0; _i3 < results.length; _i3++) {
+			document.getElementById(results[_i3].id).style.display = "flex";
 		}
 	});
 }
 
 function showEl() {
-	let elements = document.getElementsByClassName('asset-img');
+	var elements = document.getElementsByClassName('asset-img');
 
-	for (let i = 0; i < elements.length; i++) {
+	for (var i = 0; i < elements.length; i++) {
 		elements[i].style.display = 'flex';
 	}
 }
 
 // Show and update progress bar
 function progressBar() {
-	let progUp = (progAmt / progTotal) * 100;
+	var progUp = progAmt / progTotal * 100;
 
 	if (progUp.toFixed() != 100) {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
 	} else {
-		setTimeout(() => {
+		setTimeout(function () {
 			document.getElementById('progCont').style.display = 'none';
 			document.getElementById('container').style.top = '110px';
 		}, 1000);
