@@ -10,8 +10,7 @@
   },
   "scripts": {
     "compile": "babel index.js -o index.babel.js",
-    "start": "concurrently \"npm run server\" \"electron .\"",
-    "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true"
+    "start": "electron ."
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
@@ -26,14 +25,7 @@
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",
     "chokidar": "^1.7.0",
-    "concurrently": "^3.5.0",
     "electron-remote": "^1.1.2",
-    "pouchdb-adapter-http": "^6.1.2",
-    "pouchdb-adapter-websql": "^6.1.2",
-    "pouchdb-replication": "^6.1.2",
-    "pouchdb-server": "^2.3.4",
-    "rxdb": "^5.0.0",
-    "rxjs": "^5.4.1",
     "sharp": "^0.17.2"
   }
 }

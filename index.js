@@ -3,12 +3,6 @@
 require('babel-core').transform('code');
 require('babel-polyfill');
 
-// Database requires
-const RxDB = require('rxdb');
-RxDB.plugin(require('pouchdb-adapter-websql'));
-RxDB.plugin(require('pouchdb-adapter-http'));
-RxDB.plugin(require('pouchdb-replication'));
-
 // Electron requires
 const {ipcRenderer} = require('electron'),
 	  {shell} = require('electron'),
@@ -41,40 +35,6 @@ let docFrag = document.createDocumentFragment(),
 
 // Initialize database
 const assetList = document.querySelector('#asset-feed');
-
-// Create JSON Schema
-const assetSchema = {
-	title: 'asset schema',
-	description: 'describes an asset',
-	version: 0,
-	type: 'object',
-	properties: {
-		id: {
-			type: 'number'
-		},
-		name: {
-			type: 'string',
-			primary: true
-		},
-		filePath: {
-			type: 'string'
-		},
-		ogPath: {
-			type: 'string'
-		},
-		tags: {
-			type: 'array',
-			items: {
-				type: 'string'
-			}
-		}
-	}
-};
-
-// Generate syncURL for db
-console.log('hostname: ' + window.location.hostname);
-const syncURL = 'http://' + window.location.hostname + ':10102/';
-console.log(syncURL);
 
 // Window controls and browse functionality
 (function() {
