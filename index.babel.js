@@ -31,17 +31,16 @@ var jFiles = path.join(app.getPath('userData'), 'files.json'),
 // Global variables
 var docFrag = document.createDocumentFragment(),
     pFiles = [],
+    rFiles = [],
     uArray = [],
     jsonFiles = [],
     watched = [],
+    reusableIndex = [],
+    filesIndex = 0,
     progTotal = 0,
     progAmt = 0,
     dir = void 0,
-    watcher = void 0,
-    wCount = void 0;
-
-// Initialize database
-var assetList = document.querySelector('#asset-feed');
+    watcher = void 0;
 
 // Window controls and browse functionality
 (function () {
@@ -105,20 +104,6 @@ var assetList = document.querySelector('#asset-feed');
 		});
 	}
 
-	// Check if assets have been added. If so, add to json
-	// if (fs.existsSync(jFiles)) {
-	// 	fs.readFile(jFiles, (err, data) => {
-	// 		if (err) console.log(err);
-	//
-	// 		const fileCheck = JSON.parse(data);
-	// 		if (jsonFiles.length > fileCheck.length) {
-	// 			fs.writeFile(jFiles, JSON.stringify(jsonFiles, null, '\t'), (err) => {
-	// 				if (err) console.log(err);
-	// 			});
-	// 		}
-	// 	});
-	// }
-
 	// Send message to main process to load files
 	document.getElementById('browse-files').addEventListener('click', function () {
 		ipcRenderer.send('loadAssets');
@@ -150,8 +135,8 @@ function initAssets(array, aPath) {
 	progTotal = array.length;
 
 	for (var i = array.length; i-- > 0;) {
-		process(array[i].path, i, aPath);
-
+		process(array[i].path, filesIndex, aPath);
+		filesIndex++;
 		// If at end of array, save json. Prevent overwritting. Use addFiles()
 		if (i === 0) {
 
@@ -176,8 +161,7 @@ function initAssets(array, aPath) {
 }
 
 // Process Images
-function process(image, count, aPath) {
-
+function process(image, id, aPath) {
 	// Format path strings
 	var src = image.replace(/\\/g, "/"),
 	    fileName = path.basename(image).replace(/\.[^.]+$/g, ""),
@@ -186,22 +170,19 @@ function process(image, count, aPath) {
 	assetTags = tagPath.toLowerCase().replace(/\W|_/g, " ").split(" "); // Create array of tags
 
 	// Process image
-	pImg.processImage(src, count).then(function (path) {
+	pImg.processImage(src, id).then(function (path) {
 		var formattedPath = path.replace(/\\/g, "/");
 
 		// Push file info to array
-		pFiles.push({ id: count, file: formattedPath, name: fileName, og: src, tags: assetTags });
-		jsonFiles.push({ id: count, file: formattedPath, name: fileName, og: src, tags: assetTags });
-
-		console.log(jsonFiles);
+		pFiles.push({ id: id, file: formattedPath, name: fileName, og: src, tags: assetTags });
+		jsonFiles.push({ id: id, file: formattedPath, name: fileName, og: src, tags: assetTags });
 
 		// Filter out processed image from array
 		uArray = uArray.filter(function (item) {
 			return item.path != image;
 		});
-
 		// Create html for images
-		genHtml(fileName, formattedPath, src, count, assetTags[0]);
+		genHtml(fileName, formattedPath, src, id, assetTags[0]);
 
 		if (progTotal != 0) {
 			progressBar();
@@ -216,10 +197,11 @@ function jsonDisplay() {
 		if (err) throw err;
 
 		jsonFiles = JSON.parse(data);
-		wCount = jsonFiles.length;
+		console.log(jsonFiles);
 
 		for (var i = 0; i < jsonFiles.length; i++) {
 			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
+			filesIndex++;
 		}
 	});
 }
@@ -413,15 +395,37 @@ function watchDir(dir) {
 	// For now, only when it's a jpg
 	watcher.on('add', function (path) {
 		if (path.split('.').pop() === 'jpg') {
-			// Pretty up the path and find total assets
-			console.log(wCount);
-			console.log("Added " + path);
-			process(path, wCount, dir);
-			wCount++;
+			uArray.push({ path: path });
+			if (reusableIndex.length > 0) {
+				var index = reusableIndex.shift();
+				process(path, index, dir);
+			} else {
+				process(path, filesIndex, dir);
+				filesIndex++;
+				console.log(jsonFiles);
+			}
 		}
 	}).on('unlink', function (path) {
 		if (path.split('.').pop() === 'jpg') {
-			console.log("Removed " + path);
+			var fPath = path.replace(/\\/g, "/");
+
+			// Find and delete assets from DOM and JSON
+			findAsset(jsonFiles, "og", fPath).then(function (results) {
+				reusableIndex.push(results);
+				document.getElementById(jsonFiles[results].id).remove();
+				rFiles.push(jsonFiles[results]);
+				delete jsonFiles[results];
+				console.log(rFiles);
+			});
 		}
+	});
+}
+
+// Find asset in array
+function findAsset(arr, prop, value) {
+	return new Promise(function (resolve) {
+		resolve(arr.findIndex(function (obj) {
+			return obj[prop] === value;
+		}));
 	});
 }

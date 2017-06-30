@@ -25,17 +25,16 @@ const jFiles = path.join(app.getPath('userData'), 'files.json'),
 // Global variables
 let docFrag = document.createDocumentFragment(),
 	pFiles = [],
+	rFiles = [],
 	uArray = [],
 	jsonFiles = [],
 	watched = [],
+	reusableIndex = [],
+	filesIndex = 0,
 	progTotal = 0,
 	progAmt = 0,
 	dir,
-	watcher,
-	wCount;
-
-// Initialize database
-const assetList = document.querySelector('#asset-feed');
+	watcher;
 
 // Window controls and browse functionality
 (function() {
@@ -53,7 +52,7 @@ const assetList = document.querySelector('#asset-feed');
 
 	document.getElementById('close-btn').addEventListener('click', () => {
 		// Add processed images to files.json if app quit before finishing
-		if (pFiles.length > 0) {
+		if (pFiles.length > 0 || rFiles.length > 0) {
 			addFiles(pFiles);
 		} else {
 			app.quit();
@@ -131,8 +130,8 @@ function initAssets(array, aPath) {
 	progTotal = array.length;
 
 	for (let i = array.length; i-- > 0;) {
-		process(array[i].path, i, aPath);
-
+		process(array[i].path, filesIndex, aPath);
+		filesIndex++;
 		// If at end of array, save json. Prevent overwritting. Use addFiles()
 		if (i === 0) {
 
@@ -157,8 +156,7 @@ function initAssets(array, aPath) {
 }
 
 // Process Images
-function process(image, count, aPath) {
-
+function process(image, id, aPath) {
 	// Format path strings
 	let src = image.replace(/\\/g,"/"),
 		fileName = path.basename(image).replace(/\.[^.]+$/g,""),
@@ -166,20 +164,17 @@ function process(image, count, aPath) {
 		assetTags = tagPath.toLowerCase().replace(/\W|_/g," ").split(" "); // Create array of tags
 
 	// Process image
-	pImg.processImage(src, count).then((path) => {
+	pImg.processImage(src, id).then((path) => {
 		let formattedPath = path.replace(/\\/g,"/");
 
 		// Push file info to array
-		pFiles.push({id: count, file: formattedPath, name: fileName, og: src, tags: assetTags});
-		jsonFiles.push({id: count, file: formattedPath, name: fileName, og: src, tags: assetTags});
-
-		console.log(jsonFiles);
+		pFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
+		jsonFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
 
 		// Filter out processed image from array
 		uArray = uArray.filter(item => item.path != image);
-
 		// Create html for images
-		genHtml(fileName, formattedPath, src, count, assetTags[0]);
+		genHtml(fileName, formattedPath, src, id, assetTags[0]);
 
 		if (progTotal != 0 ) {
 			progressBar();
@@ -194,10 +189,11 @@ function jsonDisplay() {
 		if (err) throw err;
 
 		jsonFiles = JSON.parse(data);
-		wCount = jsonFiles.length;
+		console.log(jsonFiles);
 
 		for (let i = 0; i < jsonFiles.length; i++) {
 			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
+			filesIndex++;
 		}
 	});
 }
@@ -388,16 +384,36 @@ function watchDir(dir) {
 	watcher
 		.on('add', (path) => {
 			if (path.split('.').pop() === 'jpg') {
-				// Pretty up the path and find total assets
-				console.log(wCount);
-				console.log("Added " + path);
-				process(path, wCount, dir);
-				wCount++;
+				uArray.push({path: path});
+				if (reusableIndex.length > 0) {
+					let index = reusableIndex.shift();
+					process(path, index, dir);
+				} else {
+					process(path, filesIndex, dir);
+					filesIndex++;
+					console.log(jsonFiles);
+				}
 			}
 		})
 		.on('unlink', (path) => {
 			if (path.split('.').pop() === 'jpg') {
-				console.log("Removed " + path);
+				let fPath = path.replace(/\\/g,"/");
+
+				// Find and delete assets from DOM and JSON
+				findAsset(jsonFiles, "og", fPath).then((results) => {
+					reusableIndex.push(results);
+					document.getElementById(jsonFiles[results].id).remove();
+					rFiles.push(jsonFiles[results]);
+					delete jsonFiles[results];
+					console.log(rFiles);
+				});
 			}
 		});
+}
+
+// Find asset in array
+function findAsset(arr, prop, value) {
+	return new Promise((resolve) => {
+		resolve(arr.findIndex(obj => obj[prop] === value));
+	});
 }
