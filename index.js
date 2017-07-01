@@ -51,12 +51,8 @@ let docFrag = document.createDocumentFragment(),
 	}, false);
 
 	document.getElementById('close-btn').addEventListener('click', () => {
-		// Add processed images to files.json if app quit before finishing
-		if (pFiles.length > 0 || rFiles.length > 0) {
-			addFiles(pFiles);
-		} else {
-			app.quit();
-		}
+		// Save json if there have been changes
+		saveJson();
 
 		// All images processed? Remove file. If not, save list.
 		if (uArray.length === 0) {
@@ -69,6 +65,7 @@ let docFrag = document.createDocumentFragment(),
 			});
 		}
 
+		app.quit();
 	}, false);
 
 	// Fetch dir chosen by user and watch it
@@ -132,26 +129,6 @@ function initAssets(array, aPath) {
 	for (let i = array.length; i-- > 0;) {
 		process(array[i].path, filesIndex, aPath);
 		filesIndex++;
-		// If at end of array, save json. Prevent overwritting. Use addFiles()
-		if (i === 0) {
-
-			if (fs.existsSync(jFiles)) {
-				fs.readFile(jFiles, (err, data) => {
-					if (err) throw err;
-
-					const jsonFiles = JSON.parse(data),
-						  newFiles = jsonFiles.concat(pFiles);
-
-					fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
-						if (err) throw err;
-					});
-				});
-			} else {
-				fs.writeFile(jFiles, JSON.stringify(pFiles), (err) => {
-					if (err) console.log(err);
-				});
-			}
-		}
 	}
 }
 
@@ -189,10 +166,14 @@ function jsonDisplay() {
 		if (err) throw err;
 
 		jsonFiles = JSON.parse(data);
-		console.log(jsonFiles);
 
 		for (let i = 0; i < jsonFiles.length; i++) {
-			genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
+			// Add undefined to rFiles for reusability
+			if (typeof jsonFiles[i] === undefined) {
+				rFiles.push(i);
+			} else {
+				genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
+			}
 			filesIndex++;
 		}
 	});
@@ -253,30 +234,6 @@ function genHtml(fName, fPath, ogPath, id, aTag) {
 	assetTag.appendChild(type);
 	openBtn.appendChild(openIcon);
 	document.getElementById('asset-feed').appendChild(docFrag);
-}
-
-// Adds newly processed files to json file - Can use in initAssets()
-function addFiles(array) {
-	if (fs.existsSync(jFiles)) {
-		fs.readFile(jFiles, (err, data) => {
-			if (err) throw err;
-
-			const j = JSON.parse(data),
-				  newFiles = j.concat(array);
-
-			fs.writeFile(jFiles, JSON.stringify(newFiles, null, '\t'), (err) => {
-				if (err) throw err;
-
-				app.quit();
-			});
-		});
-	} else {
-		fs.writeFile(jFiles, JSON.stringify(array, null, '\t'), (err) => {
-			if (err) throw err;
-
-			app.quit();
-		});
-	}
 }
 
 // Search assets
@@ -405,7 +362,6 @@ function watchDir(dir) {
 					document.getElementById(jsonFiles[results].id).remove();
 					rFiles.push(jsonFiles[results]);
 					delete jsonFiles[results];
-					console.log(rFiles);
 				});
 			}
 		});
@@ -416,4 +372,13 @@ function findAsset(arr, prop, value) {
 	return new Promise((resolve) => {
 		resolve(arr.findIndex(obj => obj[prop] === value));
 	});
+}
+
+// Save JSON file at close
+function saveJson() {
+	if (pFiles.length > 0 || rFiles.length > 0) {
+		fs.writeFile(jFiles, JSON.stringify(jsonFiles, null, '\t'), (err) => {
+			if (err) console.log(err);
+		});
+	}
 }
