@@ -25,7 +25,6 @@ const jFiles = path.join(app.getPath('userData'), 'files.json'),
 // Global variables
 let docFrag = document.createDocumentFragment(),
 	pFiles = [],
-	rFiles = [],
 	uArray = [],
 	jsonFiles = [],
 	watched = [],
@@ -133,7 +132,7 @@ function initAssets(array, aPath) {
 }
 
 // Process Images
-function process(image, id, aPath) {
+function process(image, id, reIndex, aPath) {
 	// Format path strings
 	let src = image.replace(/\\/g,"/"),
 		fileName = path.basename(image).replace(/\.[^.]+$/g,""),
@@ -141,12 +140,18 @@ function process(image, id, aPath) {
 		assetTags = tagPath.toLowerCase().replace(/\W|_/g," ").split(" "); // Create array of tags
 
 	// Process image
-	pImg.processImage(src, id).then((path) => {
+	pImg.processImage(src, id, reIndex).then((path) => {
 		let formattedPath = path.replace(/\\/g,"/");
 
 		// Push file info to array
-		pFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
-		jsonFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
+		if (reIndex) {
+			console.log("Reused index!");
+			pFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
+			jsonFiles[id] = {id: id, file: formattedPath, name: fileName, og: src, tags: assetTags};
+		} else {
+			pFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
+			jsonFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
+		}
 
 		// Filter out processed image from array
 		uArray = uArray.filter(item => item.path != image);
@@ -168,9 +173,9 @@ function jsonDisplay() {
 		jsonFiles = JSON.parse(data);
 
 		for (let i = 0; i < jsonFiles.length; i++) {
-			// Add undefined to rFiles for reusability
-			if (typeof jsonFiles[i] === undefined) {
-				rFiles.push(i);
+			// Add undefined to reusableIndex for reusability
+			if (jsonFiles[i] === null) {
+				reusableIndex.push(i);
 			} else {
 				genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
 			}
@@ -343,12 +348,14 @@ function watchDir(dir) {
 			if (path.split('.').pop() === 'jpg') {
 				uArray.push({path: path});
 				if (reusableIndex.length > 0) {
-					let index = reusableIndex.shift();
-					process(path, index, dir);
+					let index = reusableIndex.shift(),
+							reIndex = true;
+					console.log(reusableIndex);
+					process(path, index, reIndex, dir);
 				} else {
-					process(path, filesIndex, dir);
+					let reIndex = false;
+					process(path, filesIndex, reIndex, dir);
 					filesIndex++;
-					console.log(jsonFiles);
 				}
 			}
 		})
@@ -360,8 +367,8 @@ function watchDir(dir) {
 				findAsset(jsonFiles, "og", fPath).then((results) => {
 					reusableIndex.push(results);
 					document.getElementById(jsonFiles[results].id).remove();
-					rFiles.push(jsonFiles[results]);
 					delete jsonFiles[results];
+					console.log(reusableIndex);
 				});
 			}
 		});
@@ -376,7 +383,7 @@ function findAsset(arr, prop, value) {
 
 // Save JSON file at close
 function saveJson() {
-	if (pFiles.length > 0 || rFiles.length > 0) {
+	if (pFiles.length > 0 || reusableIndex.length > 0) {
 		fs.writeFile(jFiles, JSON.stringify(jsonFiles, null, '\t'), (err) => {
 			if (err) console.log(err);
 		});
