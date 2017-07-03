@@ -132,7 +132,7 @@ function initAssets(array, aPath) {
 }
 
 // Process Images
-function process(image, id, reIndex, aPath) {
+function process(image, id, aPath) {
 	// Format path strings
 	let src = image.replace(/\\/g,"/"),
 		fileName = path.basename(image).replace(/\.[^.]+$/g,""),
@@ -140,18 +140,12 @@ function process(image, id, reIndex, aPath) {
 		assetTags = tagPath.toLowerCase().replace(/\W|_/g," ").split(" "); // Create array of tags
 
 	// Process image
-	pImg.processImage(src, id, reIndex).then((path) => {
+	pImg.processImage(src, id).then((path) => {
 		let formattedPath = path.replace(/\\/g,"/");
 
 		// Push file info to array
-		if (reIndex) {
-			console.log("Reused index!");
-			pFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
-			jsonFiles[id] = {id: id, file: formattedPath, name: fileName, og: src, tags: assetTags};
-		} else {
-			pFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
-			jsonFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
-		}
+		pFiles.push({id: id, file: formattedPath, name: fileName, og: src, tags: assetTags});
+		jsonFiles[id] = {id: id, file: formattedPath, name: fileName, og: src, tags: assetTags};
 
 		// Filter out processed image from array
 		uArray = uArray.filter(item => item.path != image);
@@ -348,13 +342,11 @@ function watchDir(dir) {
 			if (path.split('.').pop() === 'jpg') {
 				uArray.push({path: path});
 				if (reusableIndex.length > 0) {
-					let index = reusableIndex.shift(),
-							reIndex = true;
+					let index = reusableIndex.shift();
 					console.log(reusableIndex);
-					process(path, index, reIndex, dir);
+					process(path, index, dir);
 				} else {
-					let reIndex = false;
-					process(path, filesIndex, reIndex, dir);
+					process(path, filesIndex, dir);
 					filesIndex++;
 				}
 			}
