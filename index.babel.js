@@ -26,7 +26,8 @@ var remote = require('electron').remote,
 var jFiles = path.join(app.getPath('userData'), 'files.json'),
     unFiles = path.join(app.getPath('userData'), 'unprocessed.json'),
     dirFile = path.join(app.getPath('userData'), 'dir.json'),
-    watcherFile = path.join(app.getPath('userData'), 'watched.json');
+    watcherFile = path.join(app.getPath('userData'), 'watched.json'),
+    thumbnails = path.join(app.getPath('userData'), '.thumbnails');
 
 // Global variables
 var docFrag = document.createDocumentFragment(),
@@ -85,20 +86,20 @@ var docFrag = document.createDocumentFragment(),
 
 	// If files have been processed, display them
 	if (fs.existsSync(jFiles)) {
-		jsonDisplay();
+		jsonDisplay(function (done) {
+			// If unprocessed images, continue processing them
+			if (fs.existsSync(unFiles)) {
+				fs.readFile(unFiles, function (err, data) {
+					if (err) throw err;
+
+					var unJson = JSON.parse(data);
+					uArray = unJson;
+					initAssets(unJson, dir[0]);
+				});
+			}
+		});
 	} else {
 		document.getElementById('browse').style.display = 'block';
-	}
-
-	// If unprocessed images, continue processing them
-	if (fs.existsSync(unFiles)) {
-		fs.readFile(unFiles, function (err, data) {
-			if (err) throw err;
-
-			var unprocessedJson = JSON.parse(data);
-			uArray = unprocessedJson;
-			initAssets(unprocessedJson, dir[0]);
-		});
 	}
 
 	// Send message to main process to load files
@@ -131,9 +132,16 @@ ipcRenderer.on('getAssets', function (event, filtered, filePath) {
 function initAssets(array, aPath) {
 	progTotal = array.length;
 
+	console.log(progTotal, array);
+
 	for (var i = array.length; i-- > 0;) {
-		process(array[i].path, filesIndex, aPath);
-		filesIndex++;
+		if (reusableIndex.length > 0) {
+			var index = reusableIndex.shift();
+			process(array[i].path, index, aPath);
+		} else {
+			process(array[i].path, filesIndex, aPath);
+			filesIndex++;
+		}
 	}
 }
 
@@ -169,20 +177,23 @@ function process(image, id, aPath) {
 };
 
 // Displays processed files
-function jsonDisplay() {
+function jsonDisplay(done) {
 	fs.readFile(jFiles, function (err, data) {
 		if (err) throw err;
 
 		jsonFiles = JSON.parse(data);
 
 		for (var i = 0; i < jsonFiles.length; i++) {
-			// Add undefined to reusableIndex for reusability
+			// Add undefined to reusableIndex
 			if (jsonFiles[i] === null) {
 				reusableIndex.push(i);
 			} else {
 				genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
 			}
 			filesIndex++;
+			if (i === jsonFiles.length - 1) {
+				return done();
+			}
 		}
 	});
 }
@@ -328,6 +339,8 @@ function fL() {
 function progressBar() {
 	var progUp = progAmt / progTotal * 100;
 
+	console.log(progUp, progUp.toFixed());
+
 	if (progUp.toFixed() != 100) {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
@@ -355,7 +368,6 @@ function watchDir(dir) {
 			uArray.push({ path: path });
 			if (reusableIndex.length > 0) {
 				var index = reusableIndex.shift();
-				console.log(reusableIndex);
 				process(path, index, dir);
 			} else {
 				process(path, filesIndex, dir);
@@ -366,12 +378,15 @@ function watchDir(dir) {
 		if (path.split('.').pop() === 'jpg') {
 			var fPath = path.replace(/\\/g, "/");
 
-			// Find and delete assets from DOM and JSON
+			// Find and delete assets from DOM, JSON, and thumbnails
 			findAsset(jsonFiles, "og", fPath).then(function (results) {
+				var thumbPath = thumbnails + '\\' + results + '.webp';
 				reusableIndex.push(results);
 				document.getElementById(jsonFiles[results].id).remove();
+				fs.unlink(thumbPath, function (err) {
+					if (err) console.log(err);
+				});
 				delete jsonFiles[results];
-				console.log(reusableIndex);
 			});
 		}
 	});
