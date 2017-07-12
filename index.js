@@ -68,13 +68,14 @@ let docFrag = document.createDocumentFragment(),
 		app.quit();
 	}, false);
 
+	watchDir();
+
 	// Fetch dir chosen by user and watch it
 	if (fs.existsSync(dirFile)) {
 		fs.readFile(dirFile, (err, data) => {
 			if (err) throw err;
 
 			dir = JSON.parse(data);
-			watchDir(dir);
 		});
 	}
 
@@ -91,6 +92,7 @@ let docFrag = document.createDocumentFragment(),
 					initAssets(unJson, dir[0]);
 				});
 			}
+			watcher.add(dir);
 		});
 	} else {
 		document.getElementById('browse').style.display = 'block';
@@ -111,9 +113,9 @@ let docFrag = document.createDocumentFragment(),
 // Displays assets once browse btn is clicked
 ipcRenderer.on('getAssets', (event, filtered, filePath) => {
 	document.getElementById('browse').style.display = 'none';
-	let jsonFilePath = [filePath.replace(/\\/g,"\\") + "\\"];
+	dir = [filePath.replace(/\\/g,"/") + "/"];
 
-	fs.writeFile(path.join(app.getPath('userData'), 'dir.json'), JSON.stringify(jsonFilePath, null, '\t'), (err) => {
+	fs.writeFile(dirFile, JSON.stringify(dir, null, '\t'), (err) => {
 		if (err) console.log(err);
 	});
 
@@ -125,8 +127,6 @@ ipcRenderer.on('getAssets', (event, filtered, filePath) => {
 // Process and append each asset
 function initAssets(array, aPath) {
 	progTotal = array.length;
-
-	console.log(progTotal, array);
 
 	for (let i = array.length; i-- > 0;) {
 		if (reusableIndex.length > 0) {
@@ -149,6 +149,8 @@ function process(image, id, aPath) {
 
 	// Process image
 	pImg.processImage(src, id).then((path) => {
+
+		console.log("Processed Image");
 		let formattedPath = path.replace(/\\/g,"/");
 
 		// Push file info to array
@@ -175,12 +177,19 @@ function jsonDisplay(done) {
 		jsonFiles = JSON.parse(data);
 
 		for (let i = 0; i < jsonFiles.length; i++) {
-			// Add undefined to reusableIndex
+			// Add undefined to reusableIndex, remove missing assets, or gen html
 			if (jsonFiles[i] === null) {
 				reusableIndex.push(i);
+			} else if (!fs.existsSync(jsonFiles[i].og)) {
+				reusableIndex.push(jsonFiles[i].id);
+				fs.unlink(jsonFiles[i].file, (err) => {
+					if (err) console.log(err);
+				});
+				delete jsonFiles[i];
 			} else {
 				genHtml(jsonFiles[i].name, jsonFiles[i].file, jsonFiles[i].og, jsonFiles[i].id, jsonFiles[i].tags[0]);
 			}
+
 			filesIndex++;
 			if (i === jsonFiles.length - 1) {
 				return done();
@@ -325,13 +334,13 @@ function fL() {
 // Show and update progress bar
 function progressBar() {
 	let progUp = (progAmt / progTotal) * 100;
-
-	console.log(progUp, progUp.toFixed());
+	console.log(progAmt, progTotal, progUp);
 
 	if (progUp.toFixed() != 100) {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
 	} else {
+		watcher.add(dir);
 		setTimeout(() => {
 			document.getElementById('progCont').style.display = 'none';
 			document.getElementById('container').style.top = '110px';
@@ -342,10 +351,9 @@ function progressBar() {
 }
 
 // Create watcher for dir changes
-function watchDir(dir) {
-	watcher = chokidar.watch(dir, {
+function watchDir() {
+	watcher = chokidar.watch('', {
 		ignored: /(^|[\/\\])\../,
-		ignoreInitial: true,
 		persistent: true
 	});
 
@@ -353,25 +361,38 @@ function watchDir(dir) {
 	watcher
 		.on('add', (path) => {
 			if (path.split('.').pop() === 'jpg') {
-				uArray.push({path: path});
-				if (reusableIndex.length > 0) {
-					let index = reusableIndex.shift();
-					process(path, index, dir);
-				} else {
-					process(path, filesIndex, dir);
-					filesIndex++;
-				}
+				let fPath = path.replace(/\\/g,"/");
+
+				// Check for file path in jsonFiles
+				// If it doesn't exist, process and add it
+				findAsset(jsonFiles, "og", fPath).then((results) => {
+					if (results === -1) {
+						uArray.push({path: path});
+
+						if (reusableIndex.length > 0) {
+							console.log('Reusing index');
+							let index = reusableIndex.shift();
+							process(path, index, dir);
+						} else {
+							console.log('Creating new index');
+							process(path, filesIndex, dir);
+							filesIndex++;
+						}
+					}
+				});
 			}
 		})
 		.on('unlink', (path) => {
 			if (path.split('.').pop() === 'jpg') {
 				let fPath = path.replace(/\\/g,"/");
 
+				console.log("Removed");
+
 				// Find and delete assets from DOM, JSON, and thumbnails
 				findAsset(jsonFiles, "og", fPath).then((results) => {
 					let thumbPath = thumbnails + '\\' + results + '.webp';
 					reusableIndex.push(results);
-					document.getElementById(jsonFiles[results].id).remove();
+					document.getElementById(results).remove();
 					fs.unlink(thumbPath, (err) => {
 						if (err) console.log(err);
 					});
@@ -379,12 +400,21 @@ function watchDir(dir) {
 				});
 			}
 		});
+		// .on('raw', (event, path, details) => {
+		// 	if (event === 'rename') {
+		// 		console.log(path + ' has been renamed. ' + 'Event: ' + event + ' Details: ' + details);
+		// 	}
+		// });
 }
 
 // Find asset in array
 function findAsset(arr, prop, value) {
 	return new Promise((resolve) => {
-		resolve(arr.findIndex(obj => obj[prop] === value));
+		resolve(arr.findIndex((obj) => {
+			if (obj != null) {
+				return obj[prop] === value;
+			}
+		}));
 	});
 }
 
