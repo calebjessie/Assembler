@@ -343,6 +343,16 @@ function fL() {
 	document.getElementById('ftr-ui-elements').addEventListener('click', function () {
 		filters("kits");
 	});
+
+	// Settings overlay
+	document.getElementById('settings').addEventListener('click', function () {
+		document.getElementById('ovr').style.display = 'inline-block';
+		document.getElementById('inr-ovr').style.display = 'inline-block';
+	});
+	document.getElementById('ovr').addEventListener('click', function () {
+		document.getElementById('ovr').style.display = 'none';
+		document.getElementById('inr-ovr').style.display = 'none';
+	});
 }
 
 // Show and update progress bar
