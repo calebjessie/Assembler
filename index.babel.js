@@ -125,9 +125,8 @@ ipcRenderer.on('getAssets', function (event, filtered, filePath) {
 		if (err) console.log(err);
 	});
 
-	var aPath = filePath + "\\";
 	uArray = filtered;
-	initAssets(filtered, aPath);
+	initAssets(filtered, dir);
 });
 
 // Process and append each asset
@@ -147,17 +146,18 @@ function initAssets(array, aPath) {
 
 // Process Images
 function process(image, id, aPath) {
+
 	// Format path strings
 	var src = image.replace(/\\/g, "/"),
 	    fileName = path.basename(image).replace(/\.[^.]+$/g, ""),
-	    tagPath = image.replace(aPath, ""),
+	    tagPath = src.replace(aPath, ""),
 	    // Remove dir from path
 	assetTags = tagPath.toLowerCase().replace(/\W|_/g, " ").split(" "); // Create array of tags
 
+	console.log(src, aPath, tagPath);
+
 	// Process image
 	pImg.processImage(src, id).then(function (path) {
-
-		console.log("Processed Image");
 		var formattedPath = path.replace(/\\/g, "/");
 
 		// Push file info to array
@@ -168,6 +168,7 @@ function process(image, id, aPath) {
 		uArray = uArray.filter(function (item) {
 			return item.path != image;
 		});
+
 		// Create html for images
 		genHtml(fileName, formattedPath, src, id, assetTags[0]);
 
@@ -382,12 +383,10 @@ function watchDir() {
 					uArray.push({ path: path });
 
 					if (reusableIndex.length > 0) {
-						console.log('Reusing index');
 						var index = reusableIndex.shift();
-						process(path, index, dir);
+						process(path, index, dir[0]);
 					} else {
-						console.log('Creating new index');
-						process(path, filesIndex, dir);
+						process(path, filesIndex, dir[0]);
 						filesIndex++;
 					}
 				}
@@ -396,8 +395,6 @@ function watchDir() {
 	}).on('unlink', function (path) {
 		if (path.split('.').pop() === 'jpg') {
 			var fPath = path.replace(/\\/g, "/");
-
-			console.log("Removed");
 
 			// Find and delete assets from DOM, JSON, and thumbnails
 			findAsset(jsonFiles, "og", fPath).then(function (results) {
