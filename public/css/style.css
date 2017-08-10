@@ -338,4 +338,33 @@ div#progCont {
 	top: 5%;
 	left: 5%;
 	display: none;
+	font-size: 1.2em;
+	line-height: 1.4em;
+}
+.desc span {
+	font-style: italic;
+	display: block;
+	margin-top: 15px;
+}
+.desc ul {
+	font-size: 1em;
+	line-height: 1.6em;
+}
+.overlay-cont {
+	width: 750px;
+	padding: 50px;
+  margin: 0 auto;
+}
+.overlay-cont h3 {
+	font-weight: bold;
+}
+.settings-btn {
+	background: #0042ff;
+	color: #fff;
+	padding: 10px 15px;
+	margin-left: 20px;
+}
+.sep {
+    margin: 40px 0;
+    border-bottom: 1px solid #d8d8d8;
 }
