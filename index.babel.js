@@ -82,6 +82,9 @@ var docFrag = document.createDocumentFragment(),
 			if (err) throw err;
 
 			dir = JSON.parse(data);
+
+			var dirText = document.createTextNode(dir);
+			document.getElementById('cur-user-dir').appendChild(dirText);
 		});
 	}
 
@@ -443,4 +446,13 @@ function saveJson() {
 			if (err) console.log(err);
 		});
 	}
+}
+
+// Change dir
+function changeDir() {
+	document.getElementById('change-dir').addEventListener('click', function () {
+		// 1. Remove current assets displayed
+		// 2. Fire process function just like in the beginning
+		//    Is the dir going to be saved? Added to json or overwritten?
+	});
 }
