@@ -33,8 +33,7 @@ let docFrag = document.createDocumentFragment(),
 	filesIndex = 0,
 	progTotal = 0,
 	progAmt = 0,
-	dir,
-	watcher;
+	dir;
 
 // Window controls and browse functionality
 (function() {
@@ -68,7 +67,7 @@ let docFrag = document.createDocumentFragment(),
 		app.quit();
 	}, false);
 
-	watchDir();
+	ipcRenderer.send('startWatching');
 
 	// Fetch dir chosen by user and watch it
 	if (fs.existsSync(dirFile)) {
@@ -95,7 +94,7 @@ let docFrag = document.createDocumentFragment(),
 					initAssets(unJson, dir[0]);
 				});
 			}
-			watcher.add(dir);
+			ipcRenderer.send('addWatch', dir);
 		});
 	} else {
 		document.getElementById('browse').style.display = 'block';
@@ -358,7 +357,7 @@ function progressBar() {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
 	} else {
-		watcher.add(dir);
+		ipcRenderer.send('addWatch', dir);
 		setTimeout(() => {
 			document.getElementById('progCont').style.display = 'none';
 			document.getElementById('container').style.top = '110px';
@@ -368,62 +367,52 @@ function progressBar() {
 	document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
 }
 
-// Create watcher for dir changes
-function watchDir() {
-	watcher = chokidar.watch('', {
-		ignored: [
-			(file, fsFile) => fsFile !== undefined && !fsFile.isDirectory() && !/\.jpg$/.test(file),
-			'**__MACOSX**'
-		],
-		persistent: true
-	});
 
-	// For now, only when it's a jpg
-	watcher
-		.on('add', (path) => {
-			console.log(path);
-			if (path.split('.').pop() === 'jpg') {
-				let fPath = path.replace(/\\/g,"/");
+// Added file to watcher
+ipcRenderer.on('addWatchFile', (event, path) => {
+	console.log(path);
 
-				// Check for file path in jsonFiles
-				// If it doesn't exist, process and add it
-				findAsset(jsonFiles, "og", fPath).then((results) => {
-					if (results === -1) {
-						uArray.push({path: path});
+	if (path.split('.').pop() === 'jpg') {
+		let fPath = path.replace(/\\/g,"/");
 
-						if (reusableIndex.length > 0) {
-							let index = reusableIndex.shift();
-							process(path, index, dir[0]);
-						} else {
-							process(path, filesIndex, dir[0]);
-							filesIndex++;
-						}
-					}
-				});
-			}
-		})
-		.on('unlink', (path) => {
-			if (path.split('.').pop() === 'jpg') {
-				let fPath = path.replace(/\\/g,"/");
+		// Check for file path in jsonFiles
+		// If it doesn't exist, process and add it
+		findAsset(jsonFiles, "og", fPath).then((results) => {
+			if (results === -1) {
+				uArray.push({path: path});
 
-				// Find and delete assets from DOM, JSON, and thumbnails
-				findAsset(jsonFiles, "og", fPath).then((results) => {
-					let thumbPath = thumbnails + '\\' + results + '.webp';
-					reusableIndex.push(results);
-					document.getElementById(results).remove();
-					fs.unlink(thumbPath, (err) => {
-						if (err) console.log(err);
-					});
-					delete jsonFiles[results];
-				});
+				if (reusableIndex.length > 0) {
+					let index = reusableIndex.shift();
+					process(path, index, dir[0]);
+				} else {
+					process(path, filesIndex, dir[0]);
+					filesIndex++;
+				}
 			}
 		});
-		// .on('raw', (event, path, details) => {
-		// 	if (event === 'rename') {
-		// 		console.log(path + ' has been renamed. ' + 'Event: ' + event + ' Details: ' + details);
-		// 	}
-		// });
-}
+	}
+});
+
+// Removed file from watcher
+ipcRenderer.on('removeWatchFile', (event, path) => {
+	console.log(path);
+
+	if (path.split('.').pop() === 'jpg') {
+		let fPath = path.replace(/\\/g,"/");
+
+		// Find and delete assets from DOM, JSON, and thumbnails
+		findAsset(jsonFiles, "og", fPath).then((results) => {
+			let thumbPath = thumbnails + '\\' + results + '.webp';
+			reusableIndex.push(results);
+			document.getElementById(results).remove();
+			fs.unlink(thumbPath, (err) => {
+				if (err) console.log(err);
+			});
+			delete jsonFiles[results];
+		});
+	}
+});
+
 
 // Find asset in array
 function findAsset(arr, prop, value) {

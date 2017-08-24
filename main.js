@@ -4,9 +4,10 @@ const {app, BrowserWindow, ipcMain, dialog, session, Menu, Tray} = require('elec
 const path = require('path'),
 	  url = require('url'),
 	  fs = require('fs'),
-	  states = require('states');
+	  states = require('states'),
+		chokidar = require('chokidar');
 
-let win, ses;
+let win, ses, watcher;
 
 function createWindow () {
 	let lastWindowState = states.get("lastWindowState");
@@ -153,3 +154,28 @@ function walk(dir, done) {
 		});
 	});
 }
+
+
+// File watcher
+//
+// IPC message
+ipcMain.on('startWatching', (event, args) => {
+	watcher = chokidar.watch('', {
+		ignored: [
+			(file, fsFile) => fsFile !== undefined && !fsFile.isDirectory() && !/\.jpg$/.test(file),
+			'**__MACOSX**'
+		],
+		persistent: true
+	});
+
+	watcher.on('add', (path) => {
+		event.sender.send('addWatchFile', (path));
+	})
+	.on('unlink', (path) => {
+		event.sender.send('removeWatchFile', (path));
+	})
+});
+
+ipcMain.on('addWatch', (event, path) => {
+	watcher.add(path);
+});

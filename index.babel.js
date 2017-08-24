@@ -39,8 +39,7 @@ var docFrag = document.createDocumentFragment(),
     filesIndex = 0,
     progTotal = 0,
     progAmt = 0,
-    dir = void 0,
-    watcher = void 0;
+    dir = void 0;
 
 // Window controls and browse functionality
 (function () {
@@ -74,7 +73,7 @@ var docFrag = document.createDocumentFragment(),
 		app.quit();
 	}, false);
 
-	watchDir();
+	ipcRenderer.send('startWatching');
 
 	// Fetch dir chosen by user and watch it
 	if (fs.existsSync(dirFile)) {
@@ -101,7 +100,7 @@ var docFrag = document.createDocumentFragment(),
 					initAssets(unJson, dir[0]);
 				});
 			}
-			watcher.add(dir);
+			ipcRenderer.send('addWatch', dir);
 		});
 	} else {
 		document.getElementById('browse').style.display = 'block';
@@ -371,7 +370,7 @@ function progressBar() {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
 	} else {
-		watcher.add(dir);
+		ipcRenderer.send('addWatch', dir);
 		setTimeout(function () {
 			document.getElementById('progCont').style.display = 'none';
 			document.getElementById('container').style.top = '110px';
@@ -381,59 +380,50 @@ function progressBar() {
 	document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
 }
 
-// Create watcher for dir changes
-function watchDir() {
-	watcher = chokidar.watch('', {
-		ignored: [function (file, fsFile) {
-			return fsFile !== undefined && !fsFile.isDirectory() && !/\.jpg$/.test(file);
-		}, '**__MACOSX**'],
-		persistent: true
-	});
+// Added file to watcher
+ipcRenderer.on('addWatchFile', function (event, path) {
+	console.log(path);
 
-	// For now, only when it's a jpg
-	watcher.on('add', function (path) {
-		console.log(path);
-		if (path.split('.').pop() === 'jpg') {
-			var fPath = path.replace(/\\/g, "/");
+	if (path.split('.').pop() === 'jpg') {
+		var fPath = path.replace(/\\/g, "/");
 
-			// Check for file path in jsonFiles
-			// If it doesn't exist, process and add it
-			findAsset(jsonFiles, "og", fPath).then(function (results) {
-				if (results === -1) {
-					uArray.push({ path: path });
+		// Check for file path in jsonFiles
+		// If it doesn't exist, process and add it
+		findAsset(jsonFiles, "og", fPath).then(function (results) {
+			if (results === -1) {
+				uArray.push({ path: path });
 
-					if (reusableIndex.length > 0) {
-						var index = reusableIndex.shift();
-						process(path, index, dir[0]);
-					} else {
-						process(path, filesIndex, dir[0]);
-						filesIndex++;
-					}
+				if (reusableIndex.length > 0) {
+					var index = reusableIndex.shift();
+					process(path, index, dir[0]);
+				} else {
+					process(path, filesIndex, dir[0]);
+					filesIndex++;
 				}
-			});
-		}
-	}).on('unlink', function (path) {
-		if (path.split('.').pop() === 'jpg') {
-			var fPath = path.replace(/\\/g, "/");
+			}
+		});
+	}
+});
 
-			// Find and delete assets from DOM, JSON, and thumbnails
-			findAsset(jsonFiles, "og", fPath).then(function (results) {
-				var thumbPath = thumbnails + '\\' + results + '.webp';
-				reusableIndex.push(results);
-				document.getElementById(results).remove();
-				fs.unlink(thumbPath, function (err) {
-					if (err) console.log(err);
-				});
-				delete jsonFiles[results];
+// Removed file from watcher
+ipcRenderer.on('removeWatchFile', function (event, path) {
+	console.log(path);
+
+	if (path.split('.').pop() === 'jpg') {
+		var fPath = path.replace(/\\/g, "/");
+
+		// Find and delete assets from DOM, JSON, and thumbnails
+		findAsset(jsonFiles, "og", fPath).then(function (results) {
+			var thumbPath = thumbnails + '\\' + results + '.webp';
+			reusableIndex.push(results);
+			document.getElementById(results).remove();
+			fs.unlink(thumbPath, function (err) {
+				if (err) console.log(err);
 			});
-		}
-	});
-	// .on('raw', (event, path, details) => {
-	// 	if (event === 'rename') {
-	// 		console.log(path + ' has been renamed. ' + 'Event: ' + event + ' Details: ' + details);
-	// 	}
-	// });
-}
+			delete jsonFiles[results];
+		});
+	}
+});
 
 // Find asset in array
 function findAsset(arr, prop, value) {
