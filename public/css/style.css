@@ -18,9 +18,12 @@ h1, h2, h3, h4, h5, h6 {
 	font-family: 'Source Sans Pro', sans-serif;
 }
 button {
-    background: none;
-    border: 0;
+  background: none;
+  border: 0;
 	cursor: pointer;
+	background-color: #0042ff;
+  color: #fff;
+	font-size: 1em;
 }
 button:active {
 	outline: 0;
@@ -354,17 +357,28 @@ div#progCont {
 	width: 750px;
 	padding: 50px;
   margin: 0 auto;
+	box-sizing: border-box;
 }
 .overlay-cont h3 {
 	font-weight: bold;
 }
+.exit-btn {
+    float: right;
+		margin: 20px 25px;
+		display: block;
+		text-decoration: underline;
+		cursor: pointer;
+}
 .settings-btn {
-	background: #0042ff;
-	color: #fff;
-	padding: 10px 15px;
-	margin-left: 20px;
+  margin-top: 20px;
+	padding: 10px 25px;
+  display: block;
 }
 .sep {
     margin: 40px 0;
     border-bottom: 1px solid #d8d8d8;
+}
+#cur-user-dir {
+	margin-left: 10px;
+	color: #0042ff;
 }

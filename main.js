@@ -10,7 +10,7 @@ let win, ses;
 
 function createWindow () {
 	let lastWindowState = states.get("lastWindowState");
-	
+
 	if (lastWindowState === null) {
 		lastWindowState = {
 			width: 1366,
@@ -21,7 +21,7 @@ function createWindow () {
 			frame: false
 		}
 	}
-	
+
 	win = new BrowserWindow({
 		x: lastWindowState.x,
 		y: lastWindowState.y,
@@ -31,24 +31,29 @@ function createWindow () {
 		minHeight: 110,
 		frame: false
 	});
-	
+
 	if (lastWindowState.maximized) {
 		win.maximize();
 	}
-	
+
 	win.loadURL(url.format({
 		pathname: path.join(__dirname, 'index.html'),
 		protocol: 'file:',
 		slashes: true
 	}));
-	
+
 	win.webContents.openDevTools();
-	
+
+	win.webContents.on('new-window', (e, url) => {
+		e.preventDefault();
+		require('electron').shell.openExternal(url);
+	});
+
 	ses = win.webContents.session;
-	
+
 	win.on('close', () => {
 		let bounds = win.getBounds();
-		
+
 		states.set("lastWindowState", {
 			x: bounds.x,
 			y: bounds.y,
@@ -57,7 +62,7 @@ function createWindow () {
 			maximized: win.isMaximized()
 		});
 	});
-	
+
 	win.on('closed', () => {
 		win = null;
 	});
@@ -79,14 +84,14 @@ app.on('activate', () => {
 
 // Load Assets
 ipcMain.on('loadAssets', (event, args) => {
-	
+
 	dialog.showOpenDialog({
 		properties: ['openDirectory']
 	}, (file) => {
 		if (file === undefined) return;
-		
+
 		for (var filePath of file) {;}
-		
+
 		walk(filePath, (err, allFiles) => {
 			if (err) console.log(err);
 
@@ -111,7 +116,7 @@ ipcMain.on('loadAssets', (event, args) => {
 // Async walk version
 function walk(dir, done) {
 	let allFiles = [];
-	
+
 	fs.readdir(dir, (err, files) => {
 		if (err) return done(err);
 		let pendingFiles = files.length;
@@ -119,7 +124,7 @@ function walk(dir, done) {
 
 		files.forEach(filePath => {
 			filePath = path.resolve(dir, filePath);
-			
+
 			fs.stat(filePath, (err, stats) => {
 				if (stats && stats.isDirectory()) {
 					walk(filePath, (err, res) => {

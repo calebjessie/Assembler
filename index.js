@@ -150,7 +150,7 @@ function process(image, id, aPath) {
 		tagPath = src.replace(aPath, ""), // Remove dir from path
 		assetTags = tagPath.toLowerCase().replace(/\W|_/g," ").split(" "); // Create array of tags
 
-		console.log(src, aPath, tagPath);
+		//console.log(src, aPath, tagPath);
 
 	// Process image
 	pImg.processImage(src, id).then((path) => {
@@ -278,7 +278,7 @@ function search() {
 
 		pFilterSearch(jsonFiles, searchVal.toLowerCase()).then((results) => {
 			for (let i = 0; i < results.length; i++) {
-				console.log(results[i]);
+				//console.log(results[i]);
 				document.getElementById(results[i].id).style.display = "flex";
 			}
 		});
@@ -343,12 +343,16 @@ function fL() {
 		document.getElementById('ovr').style.display = 'none';
 		document.getElementById('inr-ovr').style.display = 'none';
 	});
+	document.getElementById('ovr-close').addEventListener('click', () => {
+		document.getElementById('ovr').style.display = 'none';
+		document.getElementById('inr-ovr').style.display = 'none';
+	});
 }
 
 // Show and update progress bar
 function progressBar() {
 	let progUp = (progAmt / progTotal) * 100;
-	console.log(progAmt, progTotal, progUp);
+	//console.log(progAmt, progTotal, progUp);
 
 	if (progUp.toFixed() != 100) {
 		document.getElementById('progCont').style.display = 'block';
@@ -367,13 +371,17 @@ function progressBar() {
 // Create watcher for dir changes
 function watchDir() {
 	watcher = chokidar.watch('', {
-		ignored: /(^|[\/\\])\../,
+		ignored: [
+			(file, fsFile) => fsFile !== undefined && !fsFile.isDirectory() && !/\.jpg$/.test(file),
+			'**__MACOSX**'
+		],
 		persistent: true
 	});
 
 	// For now, only when it's a jpg
 	watcher
 		.on('add', (path) => {
+			console.log(path);
 			if (path.split('.').pop() === 'jpg') {
 				let fPath = path.replace(/\\/g,"/");
 
