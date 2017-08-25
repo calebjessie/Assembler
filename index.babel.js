@@ -350,14 +350,17 @@ function fL() {
 	document.getElementById('settings').addEventListener('click', function () {
 		document.getElementById('ovr').style.display = 'inline-block';
 		document.getElementById('inr-ovr').style.display = 'inline-block';
+		document.getElementById('header').style.webkitAppRegion = 'no-drag';
 	});
 	document.getElementById('ovr').addEventListener('click', function () {
 		document.getElementById('ovr').style.display = 'none';
 		document.getElementById('inr-ovr').style.display = 'none';
+		document.getElementById('header').style.webkitAppRegion = 'drag';
 	});
 	document.getElementById('ovr-close').addEventListener('click', function () {
 		document.getElementById('ovr').style.display = 'none';
 		document.getElementById('inr-ovr').style.display = 'none';
+		document.getElementById('header').style.webkitAppRegion = 'drag';
 	});
 }
 
