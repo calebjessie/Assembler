@@ -393,6 +393,7 @@ function progressBar() {
 		}, 1000);
 	}
 
+	document.getElementById('progAmt').innerHTML = "(" + progAmt + "/" + progTotal + ")";
 	document.getElementById('progBar').MaterialProgress.setProgress(progUp.toFixed());
 }
 

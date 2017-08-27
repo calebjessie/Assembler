@@ -321,6 +321,20 @@ div#progCont {
 #progBar {
 	margin: 21px auto;
 }
+#progAmt {
+    display: inline-block;
+    color: #26c348;
+    position: absolute;
+    left: 520px;
+    top: -9px;
+		text-align: left;
+}
+div.mdl-progress>.progressbar {
+	background-color: #26c348;
+}
+div.mdl-progress>.bufferbar {
+    background-image: linear-gradient(to right,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(to right,#26c348 ,#26c348);
+}
 
 /* Settings Overlay */
 .overlay {
