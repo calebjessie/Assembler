@@ -32,7 +32,7 @@ let docFrag = document.createDocumentFragment(),
 	reusableIndex = [],
 	filesIndex = 0,
 	progTotal = 0,
-	progAmt = 0,
+	progAmt = 1,
 	dir;
 
 // Window controls and browse functionality
@@ -380,7 +380,6 @@ function fL() {
 // Show and update progress bar
 function progressBar() {
 	let progUp = (progAmt / progTotal) * 100;
-	//console.log(progAmt, progTotal, progUp);
 
 	if (progUp.toFixed() != 100) {
 		document.getElementById('progCont').style.display = 'block';
