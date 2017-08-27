@@ -91,6 +91,26 @@ ipcMain.on('loadAssets', (event, args) => {
 	}, (file) => {
 		if (file === undefined) return;
 
+		let jFiles = path.join(app.getPath('userData'), 'files.json'),
+				thumbs = path.join(app.getPath('userData'), '.thumbnails');
+
+		// Clean up app data if any
+		// 1. Remove image files
+		if (fs.existsSync(thumbs)) {
+			fs.readdir(thumbs, (err, files) => {
+				if (err) console.log(err);
+
+				for (let i = 0; i < files.length; i++) {
+					fs.unlink(path.join(thumbs, files[i]), (err) => {
+						if (err) console.log(err);
+					});
+				}
+			});
+		}
+
+		// 2. Send message to clear DOM
+		win.webContents.send('clearDOM');
+
 		for (var filePath of file) {;}
 
 		walk(filePath, (err, allFiles) => {
@@ -105,9 +125,11 @@ ipcMain.on('loadAssets', (event, args) => {
 				return (files.fileType === '.jpg' && testPath(files.path));
 			});
 
-			fs.mkdir(path.join(app.getPath('userData'), '.thumbnails'), (err, callback) => {
-				if (err) console.log(err);
-			});
+			if (!fs.existsSync(thumbs)) {
+				fs.mkdir(thumbs, (err, callback) => {
+					if (err) console.log(err);
+				});
+			}
 
 			event.sender.send('getAssets', filtered, filePath);
 		});
@@ -163,7 +185,7 @@ ipcMain.on('startWatching', (event, args) => {
 	watcher = chokidar.watch('', {
 		ignored: [
 			(file, fsFile) => fsFile !== undefined && !fsFile.isDirectory() && !/\.jpg$/.test(file),
-			'**__MACOSX**'
+			'**\\__MACOSX\\**'
 		],
 		persistent: true
 	});

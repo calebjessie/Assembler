@@ -75,7 +75,7 @@ var docFrag = document.createDocumentFragment(),
 
 	ipcRenderer.send('startWatching');
 
-	// Fetch dir chosen by user and watch it
+	// Fetch dir chosen by user
 	if (fs.existsSync(dirFile)) {
 		fs.readFile(dirFile, function (err, data) {
 			if (err) throw err;
@@ -111,6 +111,11 @@ var docFrag = document.createDocumentFragment(),
 		ipcRenderer.send('loadAssets');
 	});
 
+	// Send message when changing directories
+	document.getElementById('change-dir').addEventListener('click', function () {
+		ipcRenderer.send('loadAssets');
+	});
+
 	// Initially hide progress bar
 	document.getElementById('progCont').style.display = 'none';
 
@@ -118,10 +123,23 @@ var docFrag = document.createDocumentFragment(),
 	fL();
 })();
 
-// Displays assets once browse btn is clicked
+// Displays assets when directory is chosen
 ipcRenderer.on('getAssets', function (event, filtered, filePath) {
-	document.getElementById('browse').style.display = 'none';
+	var curDir = document.getElementById('cur-user-dir'),
+	    browse = document.getElementById('browse');
+	if (browse != null) {
+		browse.style.display = 'none';
+	}
 	dir = [filePath.replace(/\\/g, "/") + "/"];
+
+	// Change current directory chosen in settings
+	var dirText = document.createTextNode(dir);
+	if (curDir.innerHTML == "") {
+		curDir.appendChild(dirText);
+	} else {
+		curDir.innerHTML = "";
+		curDir.appendChild(dirText);
+	}
 
 	fs.writeFile(dirFile, JSON.stringify(dir, null, '\t'), function (err) {
 		if (err) console.log(err);
@@ -135,12 +153,19 @@ ipcRenderer.on('getAssets', function (event, filtered, filePath) {
 function initAssets(array, aPath) {
 	progTotal = array.length;
 
-	for (var i = array.length; i-- > 0;) {
+	if (jsonFiles.length != 0) {
+		for (var i = 0; i < jsonFiles.length; i++) {
+			reusableIndex.push(i);
+			delete jsonFiles[i];
+		}
+	}
+
+	for (var _i = array.length; _i-- > 0;) {
 		if (reusableIndex.length > 0) {
 			var index = reusableIndex.shift();
-			process(array[i].path, index, aPath);
+			process(array[_i].path, index, aPath);
 		} else {
-			process(array[i].path, filesIndex, aPath);
+			process(array[_i].path, filesIndex, aPath);
 			filesIndex++;
 		}
 	}
@@ -279,15 +304,15 @@ function search() {
 				elements[i].style.display = 'none';
 			}
 		} else {
-			for (var _i = 0; _i < elements.length; _i++) {
-				elements[_i].style.display = 'flex';
+			for (var _i2 = 0; _i2 < elements.length; _i2++) {
+				elements[_i2].style.display = 'flex';
 			}
 		}
 
 		pFilterSearch(jsonFiles, searchVal.toLowerCase()).then(function (results) {
-			for (var _i2 = 0; _i2 < results.length; _i2++) {
+			for (var _i3 = 0; _i3 < results.length; _i3++) {
 				//console.log(results[i]);
-				document.getElementById(results[_i2].id).style.display = "flex";
+				document.getElementById(results[_i3].id).style.display = "flex";
 			}
 		});
 	});
@@ -311,8 +336,8 @@ function filters(option) {
 	}
 
 	pFilterSearch(jsonFiles, option).then(function (results) {
-		for (var _i3 = 0; _i3 < results.length; _i3++) {
-			document.getElementById(results[_i3].id).style.display = "flex";
+		for (var _i4 = 0; _i4 < results.length; _i4++) {
+			document.getElementById(results[_i4].id).style.display = "flex";
 		}
 	});
 }
@@ -346,7 +371,7 @@ function fL() {
 		filters("kits");
 	});
 
-	// Settings overlay
+	// Settings overlay - window drag fix
 	document.getElementById('settings').addEventListener('click', function () {
 		document.getElementById('ovr').style.display = 'inline-block';
 		document.getElementById('inr-ovr').style.display = 'inline-block';
@@ -373,6 +398,7 @@ function progressBar() {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
 	} else {
+		// Currently sending message here to make sure assets are finished processing
 		ipcRenderer.send('addWatch', dir);
 		setTimeout(function () {
 			document.getElementById('progCont').style.display = 'none';
@@ -385,8 +411,6 @@ function progressBar() {
 
 // Added file to watcher
 ipcRenderer.on('addWatchFile', function (event, path) {
-	console.log(path);
-
 	if (path.split('.').pop() === 'jpg') {
 		var fPath = path.replace(/\\/g, "/");
 
@@ -410,8 +434,6 @@ ipcRenderer.on('addWatchFile', function (event, path) {
 
 // Removed file from watcher
 ipcRenderer.on('removeWatchFile', function (event, path) {
-	console.log(path);
-
 	if (path.split('.').pop() === 'jpg') {
 		var fPath = path.replace(/\\/g, "/");
 
@@ -425,6 +447,14 @@ ipcRenderer.on('removeWatchFile', function (event, path) {
 			});
 			delete jsonFiles[results];
 		});
+	}
+});
+
+// Clear DOM
+ipcRenderer.on('clearDOM', function (event) {
+	var domEl = document.getElementById('asset-feed');
+	while (domEl.lastChild) {
+		domEl.removeChild(domEl.lastChild);
 	}
 });
 
@@ -446,13 +476,4 @@ function saveJson() {
 			if (err) console.log(err);
 		});
 	}
-}
-
-// Change dir
-function changeDir() {
-	document.getElementById('change-dir').addEventListener('click', function () {
-		// 1. Remove current assets displayed
-		// 2. Fire process function just like in the beginning
-		//    Is the dir going to be saved? Added to json or overwritten?
-	});
 }
