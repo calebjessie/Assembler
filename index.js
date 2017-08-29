@@ -385,9 +385,10 @@ function progressBar() {
 		document.getElementById('progCont').style.display = 'block';
 		document.getElementById('container').style.top = '160px';
 	} else {
-		// Currently sending message here to make sure assets are finished processing
+		// Currently sending message here to make sure it's watched after assets are finished processing
 		ipcRenderer.send('addWatch', dir);
 		setTimeout(() => {
+			progAmt = 1; // Reset progress bar for future
 			document.getElementById('progCont').style.display = 'none';
 			document.getElementById('container').style.top = '110px';
 		}, 1000);
