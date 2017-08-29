@@ -188,6 +188,16 @@ button#filter-btn {
 button#filter-btn:hover {
 	background-color: #efefef;
 }
+.filter-btn-active::after {
+	content: '';
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-radius: 6px;
+	background-color: #0042ff;
+	margin-bottom: 10px;
+	margin-left: 4px;
+}
 .filter-icon {
 	display: inline-block;
 	width: 16.5px;
@@ -199,6 +209,29 @@ button#filter-btn:hover {
 #filter-options {
 	-webkit-app-region: no-drag;
 }
+#ftr-clear {
+	border-bottom: 1px solid #e0e0e0;
+}
+#clear-filters {
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	background: url('../img/ic_close.png');
+	opacity: 0.3;
+	margin-right: 5px;
+	margin-bottom: 4px;
+	vertical-align: middle;
+}
+.filter-active::before {
+	width: 8px;
+	height: 8px;
+	border-radius: 8px;
+	content: '';
+	display: inline-block;
+	background-color: #0042ff;
+	margin-right: 10px;
+}
+
 #container {
 	position: fixed;
 	overflow-y: auto;

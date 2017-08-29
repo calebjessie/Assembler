@@ -342,21 +342,37 @@ function showEl() {
 function fL() {
 	document.getElementById('ftr-clear').addEventListener('click', () => {
 		showEl();
+		let activeFilter = document.getElementsByClassName('filter-active'),
+				activeFilterBtn = document.getElementsByClassName('filter-btn-active');
+		for (let i = 0; i < activeFilter.length; i++) {
+			activeFilter[i].classList.remove('filter-active');
+		}
+		activeFilterBtn[0].classList.remove('filter-btn-active');
 	});
 	document.getElementById('ftr-stock-photos').addEventListener('click', () => {
 		filters("stock");
+		document.getElementById('ftr-stock-photos').classList.add('filter-active');
+		document.getElementById('filter-btn').classList.add('filter-btn-active');
 	});
 	document.getElementById('ftr-icons').addEventListener('click', () => {
 		filters("icons");
+		document.getElementById('ftr-icons').classList.add('filter-active');
+		document.getElementById('filter-btn').classList.add('filter-btn-active');
 	});
 	document.getElementById('ftr-fonts').addEventListener('click', () => {
 		filters("fonts");
+		document.getElementById('ftr-fonts').classList.add('filter-active');
+		document.getElementById('filter-btn').classList.add('filter-btn-active');
 	});
 	document.getElementById('ftr-mockups').addEventListener('click', () => {
 		filters("mockups");
+		document.getElementById('ftr-mockups').classList.add('filter-active');
+		document.getElementById('filter-btn').classList.add('filter-btn-active');
 	});
 	document.getElementById('ftr-ui-elements').addEventListener('click', () => {
 		filters("kits");
+		document.getElementById('ftr-ui-elements').classList.add('filter-active');
+		document.getElementById('filter-btn').classList.add('filter-btn-active');
 	});
 
 	// Settings overlay - window drag fix
