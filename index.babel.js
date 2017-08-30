@@ -237,59 +237,73 @@ function jsonDisplay(done) {
 
 // Create HTML elements and display images
 function genHtml(fName, fPath, ogPath, id, aTag) {
+	// HTML gen test
+	var assetCard = document.createElement('div'),
+	    imgId = 'image-' + id,
+	    openBtn = 'open-btn-' + id,
+	    openTxt = 'open-txt-' + id;
+
+	assetCard.className = 'asset-img';
+	assetCard.id = id;
+	assetCard.innerHTML = '\n\t\t<div class="image-node" id="' + imgId + '">\n\t\t\t<div class="open-btn" id="' + openBtn + '">\n\t\t\t\t<img class="open-icon" src="./public/img/open-icon.png">\n\t\t\t</div>\n\t\t\t<img src="' + fPath + '">\n\t\t\t<p class="open-txt" id="' + openTxt + '">open file location</p>\n\t\t</div>\n\t\t<p class="asset-title">' + fName + '</p>\n\t\t<p class="asset-tag">#' + aTag + '</p>\n\t';
+
 	// Create html elements
-	var divImg = document.createElement('div'),
-	    imageNode = document.createElement('div'),
-	    imgName = document.createElement('p'),
-	    assetTag = document.createElement('p'),
-	    img = document.createElement('img'),
-	    text = document.createTextNode(fName),
-	    openBtn = document.createElement('div'),
-	    openTxt = document.createElement('p'),
-	    openTxtValue = document.createTextNode('open file location'),
-	    openIcon = document.createElement('img'),
-	    type = document.createTextNode('#' + aTag);
+	// let divImg = document.createElement('div'),
+	// 	imageNode = document.createElement('div'),
+	// 	imgName = document.createElement('p'),
+	// 	assetTag = document.createElement('p'),
+	// 	img = document.createElement('img'),
+	// 	text = document.createTextNode(fName),
+	// 	openBtn = document.createElement('div'),
+	// 	openTxt = document.createElement('p'),
+	// 	openTxtValue = document.createTextNode('open file location'),
+	// 	openIcon = document.createElement('img'),
+	// 	type = document.createTextNode('#' + aTag);
 
 	// Create styles and add file path to div
-	divImg.className = 'asset-img';
-	divImg.id = id;
-	imgName.className = 'asset-title';
-	assetTag.className = 'asset-tag';
-	imageNode.className = 'image-node';
-	openBtn.className = 'open-btn';
-	openTxt.className = 'open-txt';
-	openIcon.classList = 'open-icon';
-	openIcon.src = './public/img/open-icon.png';
-	img.src = fPath;
+	// divImg.className = 'asset-img';
+	// divImg.id = id;
+	// imgName.className = 'asset-title';
+	// assetTag.className = 'asset-tag';
+	// imageNode.className = 'image-node';
+	// openBtn.className = 'open-btn';
+	// openTxt.className = 'open-txt';
+	// openIcon.classList = 'open-icon';
+	// openIcon.src = './public/img/open-icon.png';
+	// img.src = fPath;
 
-	// Add hover events
-	imageNode.addEventListener('mouseover', function () {
-		openBtn.style.display = 'block';
-		openTxt.style.display = 'block';
+	// Append elements to containers
+	docFrag.appendChild(assetCard);
+	//docFrag.appendChild(divImg);
+	// divImg.appendChild(imageNode);
+	// divImg.appendChild(imgName);
+	// divImg.appendChild(assetTag);
+	// imageNode.appendChild(openBtn);
+	// imageNode.appendChild(img);
+	// imageNode.appendChild(openTxt);
+	// openTxt.appendChild(openTxtValue);
+	// imgName.appendChild(text);
+	// assetTag.appendChild(type);
+	// openBtn.appendChild(openIcon);
+	document.getElementById('asset-feed').appendChild(docFrag);
+
+	// Add hover events - was imageNode
+	var openBtnNode = document.getElementById(openBtn),
+	    openTxtNode = document.getElementById(openTxt);
+
+	document.getElementById(imgId).addEventListener('mouseover', function () {
+		openBtnNode.style.display = 'block';
+		openTxtNode.style.display = 'block';
 	}, false);
-	imageNode.addEventListener('mouseout', function () {
-		openBtn.style.display = 'none';
-		openTxt.style.display = 'none';
+	document.getElementById(imgId).addEventListener('mouseout', function () {
+		openBtnNode.style.display = 'none';
+		openTxtNode.style.display = 'none';
 	}, false);
 
 	// Add click events
-	imageNode.addEventListener('click', function () {
+	document.getElementById(imgId).addEventListener('click', function () {
 		shell.showItemInFolder(ogPath);
 	}, false);
-
-	// Append elements to containers
-	docFrag.appendChild(divImg);
-	divImg.appendChild(imageNode);
-	divImg.appendChild(imgName);
-	divImg.appendChild(assetTag);
-	imageNode.appendChild(openBtn);
-	imageNode.appendChild(img);
-	imageNode.appendChild(openTxt);
-	openTxt.appendChild(openTxtValue);
-	imgName.appendChild(text);
-	assetTag.appendChild(type);
-	openBtn.appendChild(openIcon);
-	document.getElementById('asset-feed').appendChild(docFrag);
 }
 
 // Search assets
