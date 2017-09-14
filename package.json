@@ -1,31 +1,82 @@
 {
-  "name": "Asset-Manager",
+  "name": "Assembler",
   "version": "1.1.4",
   "license": "SEE LICENSE IN <LICENSE.md>",
   "main": "main.js",
-  "description": "A visual design asset manager",
+  "description": "The best way to find the design asset for the project",
+  "author": "Caleb Jessie",
   "repository": {
     "type": "git",
     "url": "https://github.com/calebjessie/Asset-Manager"
   },
   "scripts": {
     "compile": "babel index.js -o index.babel.js",
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "rebuild": "node-gyp rebuild",
+    "build": "electron-packager ./"
+  },
+  "build": {
+    "appId": "com.electron.assembler",
+    "productName": "Assembler",
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "icon": "build/icon.icns"
+    },
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/**/*"
+    ],
+    "nsis": {
+      "oneClick": "true",
+      "perMachine": "true"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png",
+      "synopsis": "Visual asset manager",
+      "category": "Graphics",
+      "desktop": [
+        {
+          "type": "Application",
+          "encoding": "UTF-8",
+          "name": "Assembler",
+          "comment": "Visual asset manager",
+          "exec": "assembler",
+          "icon": "build/icon.png",
+          "terminal": "false"
+        }
+      ]
+    }
   },
   "devDependencies": {
+    "asar": "^0.13.0",
     "babel-cli": "^6.24.1",
-    "babel-core": "^6.24.0",
     "babel-preset-env": "^1.2.2",
     "babel-preset-es2015": "^6.24.0",
     "devtron": "^1.4.0",
-    "electron": "^1.4.13",
-    "electron-rebuild": "^1.5.7"
+    "electron": "^1.7.6",
+    "electron-builder": "^19.27.3"
   },
   "dependencies": {
+    "babel-core": "^6.24.0",
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",
     "chokidar": "^1.7.0",
     "electron-remote": "^1.1.2",
-    "sharp": "^0.17.2"
+    "sharp": "^0.17.2",
+    "states": "1.0.0"
   }
 }
