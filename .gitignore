@@ -1,5 +1,4 @@
 dist
 node_modules
-build
 db.json
 npm-debug.log
