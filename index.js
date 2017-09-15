@@ -6,8 +6,15 @@ require('babel-polyfill');
 // Electron requires
 const {ipcRenderer} = require('electron'),
 	  {shell} = require('electron'),
-	  {requireTaskPool} = require('electron-remote'),
 	  {app} = require('electron').remote;
+
+// If within asar, require unpacked Module
+const isAsar = __dirname.indexOf('asar') >= 0;
+if (isAsar) {
+	const {requireTaskPool} = require('../../../app.asar.unpacked/node_modules/electron-remote');
+} else {
+	const {requireTaskPool} = require('electron-remote');
+}
 
 // Module requires
 const remote = require('electron').remote,

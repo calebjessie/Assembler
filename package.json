@@ -24,10 +24,6 @@
       "category": "public.app-category.graphics-design",
       "icon": "build/icon.icns"
     },
-    "asar": true,
-    "asarUnpack": [
-      "**/node_modules/**/*"
-    ],
     "nsis": {
       "oneClick": "true",
       "perMachine": "true"
