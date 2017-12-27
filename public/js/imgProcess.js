@@ -4,11 +4,13 @@ const {app} = require('electron').remote,
 const fs = require('fs'),
 	  path = require('path');
 
-if (isAsar) {
-	const sharp = require('../../../app.asar.unpacked/node_modules/sharp');
-} else {
-	const sharp = require('sharp');
-}
+// if (isAsar) {
+// 	const sharp = require('../../../app.asar.unpacked/node_modules/sharp');
+// } else {
+// 	const sharp = require('sharp');
+// }
+
+const sharp = require('sharp');
 
 // Resize images on child process
 exports.processImage = (imgPath, count) => {

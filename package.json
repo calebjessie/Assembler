@@ -15,18 +15,19 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "rebuild": "node-gyp rebuild",
-    "build": "electron-packager ./"
+    "build": "electron-packager ./",
+    "asar": "asar pack . app.asar"
   },
   "build": {
     "appId": "com.electron.assembler",
     "productName": "Assembler",
-    "mac": {
-      "category": "public.app-category.graphics-design",
-      "icon": "build/icon.icns"
-    },
     "nsis": {
       "oneClick": "true",
       "perMachine": "true"
+    },
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "icon": "build/icon.icns"
     },
     "win": {
       "target": [
@@ -61,10 +62,10 @@
     "asar": "^0.13.0",
     "babel-cli": "^6.24.1",
     "babel-preset-env": "^1.2.2",
-    "babel-preset-es2015": "^6.24.0",
     "devtron": "^1.4.0",
     "electron": "^1.7.6",
-    "electron-builder": "^19.27.3"
+    "electron-builder": "^19.27.3",
+    "electron-rebuild": "^1.6.0"
   },
   "dependencies": {
     "babel-core": "^6.24.0",
@@ -72,7 +73,7 @@
     "babel-runtime": "^6.23.0",
     "chokidar": "^1.7.0",
     "electron-remote": "^1.1.2",
-    "sharp": "^0.17.2",
-    "states": "1.0.0"
+    "sharp": "^0.18.4",
+    "states": "0.0.1"
   }
 }
