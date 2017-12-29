@@ -14,8 +14,6 @@
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "rebuild": "node-gyp rebuild",
-    "build": "electron-packager ./",
     "asar": "asar pack . app.asar"
   },
   "build": {
@@ -39,23 +37,6 @@
         }
       ],
       "icon": "build/icon.ico"
-    },
-    "linux": {
-      "target": "AppImage",
-      "icon": "build/icon.png",
-      "synopsis": "Visual asset manager",
-      "category": "Graphics",
-      "desktop": [
-        {
-          "type": "Application",
-          "encoding": "UTF-8",
-          "name": "Assembler",
-          "comment": "Visual asset manager",
-          "exec": "assembler",
-          "icon": "build/icon.png",
-          "terminal": "false"
-        }
-      ]
     }
   },
   "devDependencies": {
