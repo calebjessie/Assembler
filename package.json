@@ -14,17 +14,26 @@
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "asar": "asar pack . app.asar"
+    "asar": "asar pack . app.asar",
+    "postinstall": "eletron-builder install-app-deps"
   },
   "build": {
     "appId": "com.electron.assembler",
     "productName": "Assembler",
     "nsis": {
-      "oneClick": "true",
-      "perMachine": "true"
+      "oneClick": "true"
     },
     "mac": {
       "category": "public.app-category.graphics-design",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "asarUnpack": "node_modules/sharp",
       "icon": "build/icon.icns"
     },
     "win": {
@@ -44,7 +53,7 @@
     "babel-cli": "^6.24.1",
     "babel-preset-env": "^1.2.2",
     "devtron": "^1.4.0",
-    "electron": "^1.7.6",
+    "electron": "^1.7.10",
     "electron-builder": "^19.27.3",
     "electron-rebuild": "^1.6.0"
   },
