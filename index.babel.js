@@ -9,9 +9,9 @@ var _require = require('electron'),
     ipcRenderer = _require.ipcRenderer,
     _require2 = require('electron'),
     shell = _require2.shell,
+    app = require('electron').remote.app,
     _require3 = require('electron-remote'),
-    requireTaskPool = _require3.requireTaskPool,
-    app = require('electron').remote.app;
+    requireTaskPool = _require3.requireTaskPool;
 
 // Module requires
 

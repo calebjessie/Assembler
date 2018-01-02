@@ -1,6 +1,8 @@
 'use strict'
 const {app, BrowserWindow, ipcMain, dialog, session, Menu, Tray} = require('electron');
 
+const autoUpdater = require("electron-updater").autoUpdater;
+
 const path = require('path'),
 	  url = require('url'),
 	  fs = require('fs'),
