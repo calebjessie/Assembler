@@ -7,7 +7,7 @@
   "author": "Caleb Jessie",
   "repository": {
     "type": "git",
-    "url": "https://github.com/calebjessie/Asset-Manager"
+    "url": "https://github.com/calebjessie/Assembler"
   },
   "scripts": {
     "compile": "babel index.js -o index.babel.js",
@@ -63,7 +63,7 @@
     "babel-runtime": "^6.23.0",
     "chokidar": "^1.7.0",
     "electron-remote": "^1.1.2",
-    "sharp": "^0.18.4",
-    "states": "0.0.1"
+    "electron-updater": "^2.18.0",
+    "sharp": "^0.18.4"
   }
 }
